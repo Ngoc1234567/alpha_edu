@@ -14,7 +14,7 @@
 
 body {
     margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Be Vietnam Pro", Arial, Helvetica, sans-serif;
     color: var(--alpha-text);
     background: #fff;
 }
@@ -163,10 +163,13 @@ a {
 
 .hero-banner {
     width: 100%;
-    min-height: 360px;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    overflow: hidden;
+}
+
+.hero-banner img {
+    width: 100%;
+    height: auto;
+    display: block;
 }
 
 .home-intro {
@@ -227,6 +230,17 @@ a {
     align-items: center;
     justify-content: space-between;
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+    transform: translateY(0) scale(1);
+    transition: transform 220ms ease, box-shadow 220ms ease;
+    will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .course-card:hover {
+        transform: translateY(-10px) scale(1.05);
+        box-shadow: 0 18px 34px rgba(0, 0, 0, 0.2);
+        z-index: 2;
+    }
 }
 
 .course-card-blue {
@@ -381,32 +395,107 @@ a {
 }
 
 .site-footer {
-    background: #0f172a;
-    color: #fff;
+    background: #f2f7ff;
+    color: #000;
+    border-top: 1px solid #d9e8ff;
 }
 
 .footer-inner {
-    min-height: 78px;
-    display: flex;
-    align-items: center;
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: start;
     justify-content: space-between;
-    gap: 24px;
+    gap: 96px;
+    padding: 56px 0 72px;
 }
 
-.footer-inner p {
-    margin: 0;
+.footer-column h2 {
+    margin: 0 0 24px;
+    color: var(--alpha-blue);
+    font-size: clamp(28px, 3vw, 40px);
+    line-height: 1.1;
+    font-weight: 900;
 }
 
-.footer-menu {
-    display: flex;
-    gap: 18px;
+.footer-training-list,
+.footer-contact-list {
     list-style: none;
-    padding: 0;
     margin: 0;
+    padding: 0;
 }
 
-.footer-menu a {
+.footer-training-list {
+    display: grid;
+    gap: 18px;
+}
+
+.footer-training-list li {
+    position: relative;
+    padding-left: 42px;
+    color: #000;
+    font-size: 25px;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+.footer-training-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.02em;
+    width: 0;
+    height: 0;
+    border-top: 20px solid transparent;
+    border-bottom: 20px solid transparent;
+    border-left: 30px solid #000;
+}
+
+.footer-contact-list {
+    display: grid;
+    gap: 22px;
+}
+
+.footer-contact-list li {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    align-items: center;
+    gap: 14px;
+    color: #000;
+    font-size: 25px;
+    line-height: 1.25;
+    font-weight: 600;
+}
+
+.footer-contact-icon {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #000;
     color: #fff;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.footer-contact-icon-home::before {
+    content: "⌂";
+    transform: translateY(-1px);
+}
+
+.footer-contact-icon-phone::before {
+    content: "☎";
+    transform: translateY(1px);
+}
+
+.footer-contact-icon-mail::before {
+    content: "✉";
+    font-size: 23px;
+}
+
+.footer-contact-icon-web::before {
+    content: "◎";
 }
 
 .content-layout {
@@ -520,10 +609,6 @@ a {
         padding: 38px 0 22px;
     }
 
-    .hero-banner {
-        min-height: 240px;
-    }
-
     .intro-grid {
         grid-template-columns: 1fr;
         gap: 26px;
@@ -557,9 +642,24 @@ a {
     }
 
     .footer-inner {
-        padding: 22px 0;
-        flex-direction: column;
-        align-items: flex-start;
+        grid-template-columns: 1fr;
+        gap: 42px;
+        padding: 44px 0 56px;
+    }
+
+    .footer-training-list li,
+    .footer-contact-list li {
+        font-size: 21px;
+    }
+
+    .footer-contact-list li {
+        grid-template-columns: 36px minmax(0, 1fr);
+    }
+
+    .footer-contact-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 21px;
     }
 }
 
@@ -584,16 +684,27 @@ a {
         min-height: 230px;
     }
 
-    .hero-banner {
-        min-height: 190px;
-    }
-
     .stat-card strong {
         font-size: 42px;
     }
 
     .stat-card span {
         font-size: 20px;
+    }
+
+    .footer-training-list li,
+    .footer-contact-list li {
+        font-size: 18px;
+    }
+
+    .footer-training-list li {
+        padding-left: 34px;
+    }
+
+    .footer-training-list li::before {
+        border-top-width: 15px;
+        border-bottom-width: 15px;
+        border-left-width: 23px;
     }
 
     .testimonial-card {

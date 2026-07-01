@@ -37,6 +37,68 @@
                 }
             });
         }
+
+        var statCounts = document.querySelectorAll('.stat-count[data-count]');
+
+        function formatCount(value, prefix, suffix) {
+            return prefix + Math.floor(value).toLocaleString('vi-VN') + suffix;
+        }
+
+        function animateCount(element) {
+            if (element.dataset.animated === 'true') {
+                return;
+            }
+
+            var target = parseInt(element.dataset.count, 10);
+            var prefix = element.dataset.prefix || '';
+            var suffix = element.dataset.suffix || '';
+            var duration = 1400;
+            var startTime = null;
+
+            if (!target) {
+                element.dataset.animated = 'true';
+                return;
+            }
+
+            element.dataset.animated = 'true';
+
+            function step(timestamp) {
+                if (!startTime) {
+                    startTime = timestamp;
+                }
+
+                var progress = Math.min((timestamp - startTime) / duration, 1);
+                var eased = 1 - Math.pow(1 - progress, 3);
+                element.textContent = formatCount(target * eased, prefix, suffix);
+
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    element.textContent = formatCount(target, prefix, suffix);
+                }
+            }
+
+            window.requestAnimationFrame(step);
+        }
+
+        if (statCounts.length) {
+            if ('IntersectionObserver' in window) {
+                var observer = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            animateCount(entry.target);
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.35 });
+
+                statCounts.forEach(function (element) {
+                    observer.observe(element);
+                });
+            } else {
+                statCounts.forEach(animateCount);
+            }
+        }
     });
 }());
 
