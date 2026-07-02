@@ -17,7 +17,7 @@ $intro_image   = alpha_edu_get_home_field('home_intro_image');
 $courses_title = alpha_edu_get_home_field('home_courses_title');
 $course_query  = new WP_Query([
     'post_type'      => 'course',
-    'posts_per_page' => 6,
+    'posts_per_page' => -1,
     'orderby'        => ['menu_order' => 'ASC', 'date' => 'DESC'],
 ]);
 
@@ -40,6 +40,12 @@ $testimonials_title = alpha_edu_get_home_field('home_testimonials_title');
 $testimonial_query  = new WP_Query([
     'post_type'      => 'testimonial',
     'posts_per_page' => 8,
+    'meta_query'     => [
+        [
+            'key'     => '_thumbnail_id',
+            'compare' => 'EXISTS',
+        ],
+    ],
     'orderby'        => ['menu_order' => 'ASC', 'date' => 'DESC'],
 ]);
 
@@ -116,8 +122,6 @@ get_header();
 
                         <?php if ($desc) : ?>
                         <p><?php echo esc_html($desc); ?></p>
-                        <?php elseif (has_excerpt()) : ?>
-                        <p><?php echo esc_html(get_the_excerpt()); ?></p>
                         <?php endif; ?>
 
                         <?php if ($url && $label) : ?>
@@ -169,7 +173,7 @@ get_header();
     </section>
     <?php endif; ?>
 
-    <?php if ($testimonials_title || $testimonial_query->have_posts()) : ?>
+    <?php if ($testimonial_query->have_posts()) : ?>
     <section class="home-testimonials section-padding">
         <div class="container">
             <?php if ($testimonials_title) : ?>
@@ -183,22 +187,11 @@ get_header();
                         <?php
                         while ($testimonial_query->have_posts()) :
                             $testimonial_query->the_post();
-                            $rating = (int) get_field('testimonial_rating');
-                            $rating = max(0, min(5, $rating));
-                            $content = wp_strip_all_tags(get_the_content());
                             ?>
                             <div class="swiper-slide">
-                                <article class="testimonial-card">
-                                    <?php if ($content) : ?>
-                                    <p>“<?php echo esc_html($content); ?>”</p>
-                                    <?php endif; ?>
-
-                                    <h3><?php the_title(); ?></h3>
-
-                                    <?php if ($rating > 0) : ?>
-                                    <div class="stars" aria-label="<?php echo esc_attr($rating . ' sao'); ?>"><?php echo esc_html(str_repeat('★', $rating)); ?></div>
-                                    <?php endif; ?>
-                                </article>
+                                <figure class="testimonial-card">
+                                    <?php the_post_thumbnail('large', ['class' => 'testimonial-image', 'alt' => get_the_title()]); ?>
+                                </figure>
                             </div>
                             <?php
                         endwhile;

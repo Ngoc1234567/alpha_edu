@@ -25,7 +25,7 @@ add_action('after_setup_theme', 'alpha_edu_setup');
 function alpha_edu_enqueue_assets() {
     $theme_version = wp_get_theme()->get('Version');
 
-    wp_enqueue_style('alpha-edu-fonts', 'https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap', [], null);
+    wp_enqueue_style('alpha-edu-fonts', 'https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap', [], null);
     wp_enqueue_style('swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css', [], '11');
     wp_enqueue_style('alpha-edu-main', get_template_directory_uri() . '/assets/css/main.css', ['alpha-edu-fonts', 'swiper'], $theme_version);
 
@@ -33,6 +33,22 @@ function alpha_edu_enqueue_assets() {
     wp_enqueue_script('alpha-edu-main', get_template_directory_uri() . '/assets/js/main.js', ['swiper'], $theme_version, true);
 }
 add_action('wp_enqueue_scripts', 'alpha_edu_enqueue_assets');
+
+function alpha_edu_normalize_menu_label($label) {
+    $label = remove_accents(wp_strip_all_tags((string) $label));
+    $label = strtolower(trim($label));
+
+    return preg_replace('/\s+/', ' ', $label);
+}
+
+function alpha_edu_hide_exam_registration_menu_item($classes, $item, $args) {
+    if (! empty($args->theme_location) && 'primary' === $args->theme_location && 'dang ky thi' === alpha_edu_normalize_menu_label($item->title ?? '')) {
+        $classes[] = 'is-hidden-menu-item';
+    }
+
+    return $classes;
+}
+add_filter('nav_menu_css_class', 'alpha_edu_hide_exam_registration_menu_item', 10, 3);
 
 function alpha_edu_register_post_types() {
     register_post_type('course', [
@@ -47,7 +63,7 @@ function alpha_edu_register_post_types() {
         ],
         'public' => true,
         'menu_icon' => 'dashicons-welcome-learn-more',
-        'supports' => ['title', 'editor', 'excerpt', 'thumbnail', 'page-attributes'],
+        'supports' => ['title', 'editor', 'thumbnail', 'page-attributes'],
         'has_archive' => false,
         'rewrite' => ['slug' => 'khoa-hoc'],
         'show_in_rest' => true,
@@ -55,23 +71,218 @@ function alpha_edu_register_post_types() {
 
     register_post_type('testimonial', [
         'labels' => [
-            'name' => __('Đánh giá học viên', 'alpha-edu'),
-            'singular_name' => __('Đánh giá học viên', 'alpha-edu'),
-            'add_new_item' => __('Thêm đánh giá', 'alpha-edu'),
-            'edit_item' => __('Sửa đánh giá', 'alpha-edu'),
-            'new_item' => __('Đánh giá mới', 'alpha-edu'),
-            'view_item' => __('Xem đánh giá', 'alpha-edu'),
-            'search_items' => __('Tìm đánh giá', 'alpha-edu'),
+            'name' => __('Ảnh đánh giá học viên', 'alpha-edu'),
+            'singular_name' => __('Ảnh đánh giá học viên', 'alpha-edu'),
+            'add_new_item' => __('Thêm ảnh đánh giá', 'alpha-edu'),
+            'edit_item' => __('Sửa ảnh đánh giá', 'alpha-edu'),
+            'new_item' => __('Ảnh đánh giá mới', 'alpha-edu'),
+            'view_item' => __('Xem ảnh đánh giá', 'alpha-edu'),
+            'search_items' => __('Tìm ảnh đánh giá', 'alpha-edu'),
         ],
         'public' => true,
-        'menu_icon' => 'dashicons-format-quote',
-        'supports' => ['title', 'editor', 'thumbnail', 'page-attributes'],
+        'menu_icon' => 'dashicons-format-image',
+        'supports' => ['title', 'thumbnail', 'page-attributes'],
         'has_archive' => false,
         'rewrite' => ['slug' => 'danh-gia-hoc-vien'],
         'show_in_rest' => true,
     ]);
+
+    register_post_type('alpha_notice', [
+        'labels' => [
+            'name' => __('Thông báo', 'alpha-edu'),
+            'singular_name' => __('Thông báo', 'alpha-edu'),
+            'add_new_item' => __('Thêm thông báo', 'alpha-edu'),
+            'edit_item' => __('Sửa thông báo', 'alpha-edu'),
+            'new_item' => __('Thông báo mới', 'alpha-edu'),
+            'view_item' => __('Xem thông báo', 'alpha-edu'),
+            'search_items' => __('Tìm thông báo', 'alpha-edu'),
+        ],
+        'public' => true,
+        'menu_icon' => 'dashicons-megaphone',
+        'supports' => ['title', 'editor', 'excerpt', 'thumbnail', 'page-attributes'],
+        'has_archive' => false,
+        'rewrite' => ['slug' => 'thong-bao'],
+        'show_in_rest' => true,
+    ]);
 }
 add_action('init', 'alpha_edu_register_post_types');
+
+function alpha_edu_testimonial_image_labels($labels) {
+    $labels->name                  = __('Ảnh đánh giá học viên', 'alpha-edu');
+    $labels->singular_name         = __('Ảnh đánh giá học viên', 'alpha-edu');
+    $labels->add_new_item          = __('Thêm ảnh đánh giá', 'alpha-edu');
+    $labels->edit_item             = __('Sửa ảnh đánh giá', 'alpha-edu');
+    $labels->new_item              = __('Ảnh đánh giá mới', 'alpha-edu');
+    $labels->view_item             = __('Xem ảnh đánh giá', 'alpha-edu');
+    $labels->search_items          = __('Tìm ảnh đánh giá', 'alpha-edu');
+    $labels->featured_image        = __('Ảnh đánh giá', 'alpha-edu');
+    $labels->set_featured_image    = __('Chọn ảnh đánh giá', 'alpha-edu');
+    $labels->remove_featured_image = __('Xóa ảnh đánh giá', 'alpha-edu');
+    $labels->use_featured_image    = __('Dùng làm ảnh đánh giá', 'alpha-edu');
+
+    return $labels;
+}
+add_filter('post_type_labels_testimonial', 'alpha_edu_testimonial_image_labels');
+
+function alpha_edu_testimonial_admin_columns($columns) {
+    $new_columns = [];
+
+    foreach ($columns as $key => $label) {
+        if ('title' === $key) {
+            $new_columns['alpha_testimonial_image'] = __('Ảnh', 'alpha-edu');
+        }
+
+        $new_columns[$key] = $label;
+    }
+
+    return $new_columns;
+}
+add_filter('manage_testimonial_posts_columns', 'alpha_edu_testimonial_admin_columns');
+
+function alpha_edu_testimonial_admin_column_content($column, $post_id) {
+    if ('alpha_testimonial_image' !== $column) {
+        return;
+    }
+
+    if (has_post_thumbnail($post_id)) {
+        echo get_the_post_thumbnail($post_id, 'thumbnail', ['style' => 'width:88px;height:64px;object-fit:cover;border:1px solid #dcdcde;background:#fff;']);
+    } else {
+        echo '<span aria-hidden="true">—</span>';
+    }
+}
+add_action('manage_testimonial_posts_custom_column', 'alpha_edu_testimonial_admin_column_content', 10, 2);
+
+function alpha_edu_testimonial_title_placeholder($title, $post) {
+    if ('testimonial' === $post->post_type) {
+        return __('Tên ảnh/ghi chú (không hiển thị ngoài trang)', 'alpha-edu');
+    }
+
+    return $title;
+}
+add_filter('enter_title_here', 'alpha_edu_testimonial_title_placeholder', 10, 2);
+
+function alpha_edu_register_testimonial_image_help_box() {
+    add_meta_box(
+        'alpha-testimonial-image-help',
+        __('Hướng dẫn', 'alpha-edu'),
+        'alpha_edu_render_testimonial_image_help_box',
+        'testimonial',
+        'normal',
+        'high'
+    );
+}
+add_action('add_meta_boxes_testimonial', 'alpha_edu_register_testimonial_image_help_box');
+
+function alpha_edu_render_testimonial_image_help_box() {
+    echo '<p>' . esc_html__('Mỗi mục đánh giá học viên là một hình ảnh. Hãy chọn ảnh ở khung “Ảnh đánh giá”; phần tên chỉ dùng để quản lý trong admin và không hiển thị ngoài trang.', 'alpha-edu') . '</p>';
+}
+
+function alpha_edu_hide_testimonial_rating_field($field) {
+    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+
+    if ($screen && 'testimonial' === $screen->post_type) {
+        return false;
+    }
+
+    return $field;
+}
+add_filter('acf/prepare_field/name=testimonial_rating', 'alpha_edu_hide_testimonial_rating_field');
+
+function alpha_edu_register_notice_images_meta_box() {
+    add_meta_box(
+        'alpha-notice-images',
+        __('Ảnh thông báo', 'alpha-edu'),
+        'alpha_edu_render_notice_images_meta_box',
+        'alpha_notice',
+        'side',
+        'default'
+    );
+}
+add_action('add_meta_boxes', 'alpha_edu_register_notice_images_meta_box');
+
+function alpha_edu_get_notice_image_ids($post_id) {
+    $image_ids = get_post_meta($post_id, '_alpha_notice_images', true);
+
+    if (! is_array($image_ids)) {
+        return [];
+    }
+
+    return array_values(array_filter(array_map('absint', $image_ids)));
+}
+
+function alpha_edu_render_notice_images_meta_box($post) {
+    $image_ids = alpha_edu_get_notice_image_ids($post->ID);
+
+    wp_nonce_field('alpha_notice_images', 'alpha_notice_images_nonce');
+    ?>
+    <div class="alpha-notice-images" data-alpha-notice-images>
+        <input type="hidden" name="alpha_notice_images" value="<?php echo esc_attr(implode(',', $image_ids)); ?>" data-alpha-notice-images-input>
+
+        <div class="alpha-notice-images-preview" data-alpha-notice-images-preview>
+            <?php foreach ($image_ids as $image_id) : ?>
+                <?php echo wp_get_attachment_image($image_id, 'thumbnail'); ?>
+            <?php endforeach; ?>
+        </div>
+
+        <p>
+            <button type="button" class="button" data-alpha-notice-images-select><?php esc_html_e('Chọn ảnh', 'alpha-edu'); ?></button>
+            <button type="button" class="button-link-delete" data-alpha-notice-images-clear><?php esc_html_e('Xóa ảnh', 'alpha-edu'); ?></button>
+        </p>
+    </div>
+    <?php
+}
+
+function alpha_edu_save_notice_images($post_id) {
+    if (
+        ! isset($_POST['alpha_notice_images_nonce'])
+        || ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['alpha_notice_images_nonce'])), 'alpha_notice_images')
+    ) {
+        return;
+    }
+
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+
+    if (! current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    $raw_image_ids = isset($_POST['alpha_notice_images']) ? sanitize_text_field(wp_unslash($_POST['alpha_notice_images'])) : '';
+    $image_ids = array_values(array_filter(array_map('absint', explode(',', $raw_image_ids))));
+
+    if ($image_ids) {
+        update_post_meta($post_id, '_alpha_notice_images', $image_ids);
+    } else {
+        delete_post_meta($post_id, '_alpha_notice_images');
+    }
+}
+add_action('save_post_alpha_notice', 'alpha_edu_save_notice_images');
+
+function alpha_edu_enqueue_notice_images_admin_assets($hook_suffix) {
+    if (! in_array($hook_suffix, ['post.php', 'post-new.php'], true)) {
+        return;
+    }
+
+    $screen = get_current_screen();
+
+    if (! $screen || 'alpha_notice' !== $screen->post_type) {
+        return;
+    }
+
+    wp_enqueue_media();
+
+    wp_add_inline_style(
+        'wp-admin',
+        '.alpha-notice-images-preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}.alpha-notice-images-preview img{width:100%;height:78px;object-fit:cover;border:1px solid #dcdcde;background:#f6f7f7}.alpha-notice-images .button-link-delete{margin-left:8px;color:#b32d2e}'
+    );
+
+    wp_add_inline_script(
+        'jquery-core',
+        "jQuery(function($){var frame;$('[data-alpha-notice-images-select]').on('click',function(e){e.preventDefault();var box=$(this).closest('[data-alpha-notice-images]');var input=box.find('[data-alpha-notice-images-input]');var preview=box.find('[data-alpha-notice-images-preview]');frame=wp.media({title:'Chọn ảnh thông báo',button:{text:'Dùng ảnh này'},library:{type:'image'},multiple:true});frame.on('select',function(){var ids=[];preview.empty();frame.state().get('selection').each(function(attachment){var data=attachment.toJSON();ids.push(data.id);var src=(data.sizes&&data.sizes.thumbnail)?data.sizes.thumbnail.url:data.url;preview.append($('<img>',{src:src,alt:data.alt||data.title||''}));});input.val(ids.join(','));});frame.open();});$('[data-alpha-notice-images-clear]').on('click',function(e){e.preventDefault();var box=$(this).closest('[data-alpha-notice-images]');box.find('[data-alpha-notice-images-input]').val('');box.find('[data-alpha-notice-images-preview]').empty();});});"
+    );
+}
+add_action('admin_enqueue_scripts', 'alpha_edu_enqueue_notice_images_admin_assets');
 
 function alpha_edu_asset_url($path) {
     return get_template_directory_uri() . '/assets/' . ltrim($path, '/');
@@ -111,25 +322,6 @@ function alpha_edu_get_option_field($selector, $default = '') {
     return $value;
 }
 
-function alpha_edu_register_footer_settings_page() {
-    $hook = add_menu_page(
-        __('Footer', 'alpha-edu'),
-        __('Footer', 'alpha-edu'),
-        'manage_options',
-        'alpha-edu-footer',
-        'alpha_edu_render_footer_settings_page',
-        'dashicons-editor-table',
-        61
-    );
-
-    add_action('load-' . $hook, function () {
-        if (function_exists('acf_form_head')) {
-            acf_form_head();
-        }
-    });
-}
-add_action('admin_menu', 'alpha_edu_register_footer_settings_page');
-
 function alpha_edu_render_footer_settings_page() {
     ?>
     <div class="wrap">
@@ -147,6 +339,761 @@ function alpha_edu_render_footer_settings_page() {
             echo '<p>' . esc_html__('Vui lòng kích hoạt plugin Advanced Custom Fields.', 'alpha-edu') . '</p>';
         }
         ?>
+    </div>
+    <?php
+}
+
+function alpha_edu_normalize_exam_header($value) {
+    $value = remove_accents((string) $value);
+    $value = strtolower(trim($value));
+    $value = preg_replace('/[^a-z0-9]+/', '_', $value);
+
+    return trim($value, '_');
+}
+
+function alpha_edu_match_exam_column($header) {
+    $header = alpha_edu_normalize_exam_header($header);
+    $columns = [
+        'year'     => ['nam', 'year'],
+        'course'   => ['khoa_thi', 'khoa', 'dot_thi', 'ky_thi', 'course', 'exam'],
+        'cccd'     => ['cccd', 'so_cccd', 'cmnd', 'so_cmnd', 'can_cuoc', 'can_cuoc_cong_dan'],
+        'sbd'      => ['sbd', 'so_bao_danh', 'ma_du_thi'],
+        'theory'   => ['diem_ly_thuyet', 'ly_thuyet', 'diem_lt', 'lt'],
+        'practice' => ['diem_thuc_hanh', 'thuc_hanh', 'diem_th', 'th'],
+        'result'   => ['ket_qua_thi', 'ket_qua', 'kq'],
+        'note'     => ['ghi_chu', 'note'],
+    ];
+
+    foreach ($columns as $key => $aliases) {
+        if (in_array($header, $aliases, true)) {
+            return $key;
+        }
+    }
+
+    return '';
+}
+
+function alpha_edu_format_exam_score($value) {
+    $value = alpha_edu_clean_exam_cell($value);
+
+    if ('' === $value || ! is_numeric($value)) {
+        return $value;
+    }
+
+    return number_format((float) $value, 2, '.', '');
+}
+
+function alpha_edu_clean_exam_cell($value) {
+    $value = wp_strip_all_tags((string) $value);
+    $value = html_entity_decode($value, ENT_QUOTES, get_bloginfo('charset'));
+    $value = preg_replace('/\s+/', ' ', $value);
+    $value = trim($value);
+
+    if (preg_match('/^\d+(?:\.\d+)?e[+-]?\d+$/i', $value)) {
+        $value = sprintf('%.0F', (float) $value);
+    }
+
+    return $value;
+}
+
+function alpha_edu_extract_exam_meta_from_rows($rows) {
+    $meta = [
+        'year'   => '',
+        'course' => '',
+    ];
+
+    foreach (array_slice($rows, 0, 12) as $row) {
+        $line = alpha_edu_clean_exam_cell(implode(' ', array_filter($row, 'strlen')));
+
+        if ('' === $line) {
+            continue;
+        }
+
+        if ('' === $meta['year'] && preg_match('/\b(20\d{2})\b/', $line, $matches)) {
+            $meta['year'] = $matches[1];
+        }
+
+        if ('' === $meta['course'] && false !== stripos(remove_accents($line), 'KHOA THI')) {
+            $course = preg_replace('/^KẾT QUẢ THI\s+/iu', '', $line);
+            $course = preg_replace('/\s+KHÓA THI NGÀY\s+/iu', ' - Khóa ', $course);
+            $course = preg_replace('/\s+/', ' ', $course);
+            $meta['course'] = trim($course);
+        }
+    }
+
+    return $meta;
+}
+
+function alpha_edu_find_exam_header_index($rows) {
+    foreach ($rows as $index => $row) {
+        $normalized = array_map('alpha_edu_normalize_exam_header', $row);
+
+        if (in_array('cccd', $normalized, true) || in_array('so_cccd', $normalized, true)) {
+            return $index;
+        }
+    }
+
+    return 0;
+}
+
+function alpha_edu_build_exam_column_map($header_row, $subheader_row = []) {
+    $column_map = [];
+
+    foreach ($header_row as $index => $header) {
+        $subheader = $subheader_row[$index] ?? '';
+        $combined = trim($header . ' ' . $subheader);
+        $column_key = alpha_edu_match_exam_column($combined);
+
+        if (! $column_key) {
+            $column_key = alpha_edu_match_exam_column($header);
+        }
+
+        if (! $column_key) {
+            $column_key = alpha_edu_match_exam_column($subheader);
+        }
+
+        if ($column_key) {
+            $column_map[$column_key] = $index;
+        }
+    }
+
+    return $column_map;
+}
+
+function alpha_edu_build_exam_results_from_rows($rows) {
+    if (count($rows) < 2) {
+        return new WP_Error('alpha_exam_empty', __('File không có dữ liệu.', 'alpha-edu'));
+    }
+
+    $rows = array_map(function ($row) {
+        return array_map('alpha_edu_clean_exam_cell', $row);
+    }, $rows);
+    $meta = alpha_edu_extract_exam_meta_from_rows($rows);
+    $header_index = alpha_edu_find_exam_header_index($rows);
+    $headers = $rows[$header_index] ?? [];
+    $subheaders = $rows[$header_index + 1] ?? [];
+    $column_map = alpha_edu_build_exam_column_map($headers, $subheaders);
+
+    foreach (['cccd', 'theory', 'practice', 'result'] as $required_key) {
+        if (! isset($column_map[$required_key])) {
+            return new WP_Error('alpha_exam_missing_column', sprintf(__('Thiếu cột bắt buộc: %s.', 'alpha-edu'), esc_html($required_key)));
+        }
+    }
+
+    $items = [];
+
+    foreach (array_slice($rows, $header_index + 1) as $row) {
+        $year = isset($column_map['year']) ? alpha_edu_clean_exam_cell($row[$column_map['year']] ?? '') : $meta['year'];
+        $course = isset($column_map['course']) ? alpha_edu_clean_exam_cell($row[$column_map['course']] ?? '') : $meta['course'];
+        $item = [
+            'year'     => $year,
+            'course'   => $course,
+            'cccd'     => alpha_edu_clean_exam_cell($row[$column_map['cccd']] ?? ''),
+            'sbd'      => isset($column_map['sbd']) ? alpha_edu_clean_exam_cell($row[$column_map['sbd']] ?? '') : '',
+            'theory'   => alpha_edu_format_exam_score($row[$column_map['theory']] ?? ''),
+            'practice' => alpha_edu_format_exam_score($row[$column_map['practice']] ?? ''),
+            'result'   => alpha_edu_clean_exam_cell($row[$column_map['result']] ?? ''),
+            'note'     => isset($column_map['note']) ? alpha_edu_clean_exam_cell($row[$column_map['note']] ?? '') : '',
+        ];
+
+        if ('' === $item['year'] || '' === $item['course'] || '' === $item['cccd']) {
+            continue;
+        }
+
+        $items[] = $item;
+    }
+
+    if (! $items) {
+        return new WP_Error('alpha_exam_no_valid_rows', __('Không tìm thấy dòng dữ liệu hợp lệ.', 'alpha-edu'));
+    }
+
+    return $items;
+}
+
+function alpha_edu_parse_exam_csv($file_path) {
+    $handle = fopen($file_path, 'r');
+
+    if (! $handle) {
+        return new WP_Error('alpha_exam_csv_open', __('Không đọc được file CSV.', 'alpha-edu'));
+    }
+
+    $rows = [];
+
+    while (false !== ($row = fgetcsv($handle))) {
+        if ($row && isset($row[0])) {
+            $row[0] = preg_replace('/^\xEF\xBB\xBF/', '', $row[0]);
+        }
+
+        $rows[] = $row;
+    }
+
+    fclose($handle);
+
+    return alpha_edu_build_exam_results_from_rows($rows);
+}
+
+function alpha_edu_xlsx_text_from_node($node) {
+    $text = '';
+
+    foreach ($node->children() as $child) {
+        if ('t' === $child->getName()) {
+            $text .= (string) $child;
+        } else {
+            $text .= alpha_edu_xlsx_text_from_node($child);
+        }
+    }
+
+    return $text;
+}
+
+function alpha_edu_xlsx_column_index($cell_ref) {
+    $letters = preg_replace('/[^A-Z]/', '', strtoupper($cell_ref));
+    $index = 0;
+
+    for ($i = 0, $length = strlen($letters); $i < $length; $i++) {
+        $index = ($index * 26) + (ord($letters[$i]) - 64);
+    }
+
+    return max(0, $index - 1);
+}
+
+function alpha_edu_parse_exam_xlsx($file_path) {
+    if (! class_exists('ZipArchive')) {
+        return new WP_Error('alpha_exam_zip_missing', __('Máy chủ chưa bật ZipArchive nên chưa đọc được file XLSX. Vui lòng dùng CSV hoặc bật ZipArchive.', 'alpha-edu'));
+    }
+
+    $zip = new ZipArchive();
+
+    if (true !== $zip->open($file_path)) {
+        return new WP_Error('alpha_exam_xlsx_open', __('Không mở được file XLSX.', 'alpha-edu'));
+    }
+
+    $shared_strings = [];
+    $shared_xml = $zip->getFromName('xl/sharedStrings.xml');
+
+    if ($shared_xml) {
+        $shared = simplexml_load_string($shared_xml);
+
+        if ($shared) {
+            foreach ($shared->si as $string_node) {
+                $shared_strings[] = alpha_edu_xlsx_text_from_node($string_node);
+            }
+        }
+    }
+
+    $sheet_xml = $zip->getFromName('xl/worksheets/sheet1.xml');
+    $zip->close();
+
+    if (! $sheet_xml) {
+        return new WP_Error('alpha_exam_xlsx_sheet', __('File XLSX không có sheet đầu tiên.', 'alpha-edu'));
+    }
+
+    $sheet = simplexml_load_string($sheet_xml);
+
+    if (! $sheet || ! isset($sheet->sheetData->row)) {
+        return new WP_Error('alpha_exam_xlsx_data', __('File XLSX không có dữ liệu.', 'alpha-edu'));
+    }
+
+    $rows = [];
+
+    foreach ($sheet->sheetData->row as $row_node) {
+        $row = [];
+
+        foreach ($row_node->c as $cell) {
+            $attrs = $cell->attributes();
+            $index = alpha_edu_xlsx_column_index((string) ($attrs['r'] ?? 'A1'));
+            $type = (string) ($attrs['t'] ?? '');
+            $value = '';
+
+            if ('s' === $type) {
+                $shared_index = absint((string) $cell->v);
+                $value = $shared_strings[$shared_index] ?? '';
+            } elseif ('inlineStr' === $type && isset($cell->is)) {
+                $value = alpha_edu_xlsx_text_from_node($cell->is);
+            } elseif (isset($cell->v)) {
+                $value = (string) $cell->v;
+            }
+
+            $row[$index] = $value;
+        }
+
+        if ($row) {
+            $normalized_row = [];
+            $max_index = max(array_keys($row));
+
+            for ($i = 0; $i <= $max_index; $i++) {
+                $normalized_row[$i] = $row[$i] ?? '';
+            }
+
+            $rows[] = $normalized_row;
+        }
+    }
+
+    return alpha_edu_build_exam_results_from_rows($rows);
+}
+
+function alpha_edu_get_exam_results_data() {
+    $data = get_option('alpha_edu_exam_results_data', []);
+
+    if (! is_array($data)) {
+        return [
+            'rows'        => [],
+            'filename'    => '',
+            'imported_at' => '',
+        ];
+    }
+
+    $data['rows'] = isset($data['rows']) && is_array($data['rows']) ? $data['rows'] : [];
+    $data['filename'] = isset($data['filename']) ? (string) $data['filename'] : '';
+    $data['imported_at'] = isset($data['imported_at']) ? (string) $data['imported_at'] : '';
+
+    return $data;
+}
+
+function alpha_edu_get_exam_years() {
+    $data = alpha_edu_get_exam_results_data();
+    $years = array_unique(array_filter(wp_list_pluck($data['rows'], 'year')));
+    rsort($years, SORT_NATURAL);
+
+    return $years;
+}
+
+function alpha_edu_get_exam_courses($year = '') {
+    $data = alpha_edu_get_exam_results_data();
+    $courses = [];
+
+    foreach ($data['rows'] as $row) {
+        if ($year && $year !== $row['year']) {
+            continue;
+        }
+
+        if (! empty($row['course'])) {
+            $courses[] = $row['course'];
+        }
+    }
+
+    return array_values(array_unique($courses));
+}
+
+function alpha_edu_lookup_exam_results($year, $course, $cccd) {
+    $data = alpha_edu_get_exam_results_data();
+    $cccd = preg_replace('/\D+/', '', (string) $cccd);
+    $results = [];
+
+    if ('' === $cccd) {
+        return [];
+    }
+
+    foreach ($data['rows'] as $row) {
+        $row_cccd = preg_replace('/\D+/', '', (string) ($row['cccd'] ?? ''));
+
+        if ($year && $year !== ($row['year'] ?? '')) {
+            continue;
+        }
+
+        if ($course && $course !== ($row['course'] ?? '')) {
+            continue;
+        }
+
+        if ($cccd !== $row_cccd) {
+            continue;
+        }
+
+        $results[] = $row;
+    }
+
+    return $results;
+}
+
+function alpha_edu_register_exam_results_admin_page() {
+    add_menu_page(
+        __('Kết quả thi', 'alpha-edu'),
+        __('Kết quả thi', 'alpha-edu'),
+        'manage_options',
+        'alpha-edu-exam-results',
+        'alpha_edu_render_exam_results_admin_page',
+        'dashicons-welcome-write-blog',
+        62
+    );
+}
+add_action('admin_menu', 'alpha_edu_register_exam_results_admin_page');
+
+function alpha_edu_handle_exam_results_upload() {
+    if (! current_user_can('manage_options')) {
+        wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'alpha-edu'));
+    }
+
+    check_admin_referer('alpha_edu_exam_results_upload');
+
+    if (empty($_FILES['alpha_exam_results_file']['tmp_name'])) {
+        wp_safe_redirect(add_query_arg('alpha_exam_status', 'missing', wp_get_referer()));
+        exit;
+    }
+
+    $file = $_FILES['alpha_exam_results_file'];
+    $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+    if (! in_array($extension, ['xlsx', 'csv'], true)) {
+        wp_safe_redirect(add_query_arg('alpha_exam_status', 'invalid', wp_get_referer()));
+        exit;
+    }
+
+    $rows = 'csv' === $extension
+        ? alpha_edu_parse_exam_csv($file['tmp_name'])
+        : alpha_edu_parse_exam_xlsx($file['tmp_name']);
+
+    if (is_wp_error($rows)) {
+        set_transient('alpha_edu_exam_results_error', $rows->get_error_message(), 60);
+        wp_safe_redirect(add_query_arg('alpha_exam_status', 'error', wp_get_referer()));
+        exit;
+    }
+
+    update_option('alpha_edu_exam_results_data', [
+        'rows'        => $rows,
+        'filename'    => sanitize_file_name($file['name']),
+        'imported_at' => current_time('mysql'),
+    ], false);
+
+    wp_safe_redirect(add_query_arg('alpha_exam_status', 'success', wp_get_referer()));
+    exit;
+}
+add_action('admin_post_alpha_edu_upload_exam_results', 'alpha_edu_handle_exam_results_upload');
+
+function alpha_edu_handle_exam_results_save_rows() {
+    if (! current_user_can('manage_options')) {
+        wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'alpha-edu'));
+    }
+
+    check_admin_referer('alpha_edu_exam_results_save_rows');
+
+    $rows = isset($_POST['alpha_exam_rows']) && is_array($_POST['alpha_exam_rows'])
+        ? wp_unslash($_POST['alpha_exam_rows'])
+        : [];
+    $clean_rows = [];
+
+    foreach ($rows as $row) {
+        if (! is_array($row)) {
+            continue;
+        }
+
+        $item = [
+            'year'     => alpha_edu_clean_exam_cell($row['year'] ?? ''),
+            'course'   => alpha_edu_clean_exam_cell($row['course'] ?? ''),
+            'cccd'     => alpha_edu_clean_exam_cell($row['cccd'] ?? ''),
+            'sbd'      => alpha_edu_clean_exam_cell($row['sbd'] ?? ''),
+            'theory'   => alpha_edu_format_exam_score($row['theory'] ?? ''),
+            'practice' => alpha_edu_format_exam_score($row['practice'] ?? ''),
+            'result'   => alpha_edu_clean_exam_cell($row['result'] ?? ''),
+            'note'     => alpha_edu_clean_exam_cell($row['note'] ?? ''),
+        ];
+
+        if ('' === $item['year'] || '' === $item['course'] || '' === $item['cccd']) {
+            continue;
+        }
+
+        $clean_rows[] = $item;
+    }
+
+    $data = alpha_edu_get_exam_results_data();
+    $data['rows'] = $clean_rows;
+    $data['imported_at'] = current_time('mysql');
+
+    update_option('alpha_edu_exam_results_data', $data, false);
+
+    wp_safe_redirect(add_query_arg('alpha_exam_status', 'saved', wp_get_referer()));
+    exit;
+}
+add_action('admin_post_alpha_edu_save_exam_results_rows', 'alpha_edu_handle_exam_results_save_rows');
+
+function alpha_edu_render_exam_results_admin_page() {
+    $data = alpha_edu_get_exam_results_data();
+    $status = isset($_GET['alpha_exam_status']) ? sanitize_key(wp_unslash($_GET['alpha_exam_status'])) : '';
+    $error = get_transient('alpha_edu_exam_results_error');
+
+    if ($error) {
+        delete_transient('alpha_edu_exam_results_error');
+    }
+    ?>
+    <div class="wrap">
+        <h1><?php esc_html_e('Quản lý kết quả thi', 'alpha-edu'); ?></h1>
+
+        <?php if ('success' === $status) : ?>
+            <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã cập nhật dữ liệu kết quả thi.', 'alpha-edu'); ?></p></div>
+        <?php elseif ('saved' === $status) : ?>
+            <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã lưu các dòng kết quả thi.', 'alpha-edu'); ?></p></div>
+        <?php elseif ('missing' === $status) : ?>
+            <div class="notice notice-error is-dismissible"><p><?php esc_html_e('Vui lòng chọn file để upload.', 'alpha-edu'); ?></p></div>
+        <?php elseif ('invalid' === $status) : ?>
+            <div class="notice notice-error is-dismissible"><p><?php esc_html_e('Chỉ hỗ trợ file .xlsx hoặc .csv.', 'alpha-edu'); ?></p></div>
+        <?php elseif ('error' === $status) : ?>
+            <div class="notice notice-error is-dismissible"><p><?php echo esc_html($error ?: __('Không nhập được dữ liệu.', 'alpha-edu')); ?></p></div>
+        <?php endif; ?>
+
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" enctype="multipart/form-data" style="max-width:760px;background:#fff;border:1px solid #dcdcde;padding:20px;margin-top:18px;">
+            <?php wp_nonce_field('alpha_edu_exam_results_upload'); ?>
+            <input type="hidden" name="action" value="alpha_edu_upload_exam_results">
+
+            <h2 style="margin-top:0;"><?php esc_html_e('Upload file điểm', 'alpha-edu'); ?></h2>
+            <p><?php esc_html_e('Hỗ trợ file mẫu có tiêu đề khóa thi ở đầu file và bảng gồm CCCD, LT, TH, Kết quả. Nếu file có thêm Năm, Khóa thi, SBD, Ghi chú thì hệ thống cũng tự nhận.', 'alpha-edu'); ?></p>
+            <p><input type="file" name="alpha_exam_results_file" accept=".xlsx,.csv" required></p>
+            <?php submit_button(__('Cập nhật kết quả thi', 'alpha-edu')); ?>
+        </form>
+
+        <h2><?php esc_html_e('Dữ liệu hiện tại', 'alpha-edu'); ?></h2>
+        <p>
+            <strong><?php esc_html_e('File:', 'alpha-edu'); ?></strong>
+            <?php echo esc_html($data['filename'] ?: __('Chưa có dữ liệu', 'alpha-edu')); ?>
+            <?php if ($data['imported_at']) : ?>
+                <br><strong><?php esc_html_e('Cập nhật:', 'alpha-edu'); ?></strong>
+                <?php echo esc_html($data['imported_at']); ?>
+            <?php endif; ?>
+            <br><strong><?php esc_html_e('Số dòng:', 'alpha-edu'); ?></strong>
+            <?php echo esc_html(number_format_i18n(count($data['rows']))); ?>
+        </p>
+
+        <?php if (! empty($data['rows'])) : ?>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <?php wp_nonce_field('alpha_edu_exam_results_save_rows'); ?>
+                <input type="hidden" name="action" value="alpha_edu_save_exam_results_rows">
+
+                <div style="max-width:100%;overflow:auto;border:1px solid #dcdcde;background:#fff;">
+                    <table class="widefat striped" style="min-width:1320px;border:0;">
+                        <thead>
+                            <tr>
+                                <th style="width:84px;"><?php esc_html_e('Năm', 'alpha-edu'); ?></th>
+                                <th style="width:360px;"><?php esc_html_e('Khóa thi', 'alpha-edu'); ?></th>
+                                <th style="width:170px;"><?php esc_html_e('CCCD', 'alpha-edu'); ?></th>
+                                <th style="width:160px;"><?php esc_html_e('SBD', 'alpha-edu'); ?></th>
+                                <th style="width:120px;"><?php esc_html_e('Lý thuyết', 'alpha-edu'); ?></th>
+                                <th style="width:120px;"><?php esc_html_e('Thực hành', 'alpha-edu'); ?></th>
+                                <th style="width:140px;"><?php esc_html_e('Kết quả', 'alpha-edu'); ?></th>
+                                <th style="width:240px;"><?php esc_html_e('Ghi chú', 'alpha-edu'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($data['rows'] as $index => $row) : ?>
+                                <tr>
+                                    <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][year]" value="<?php echo esc_attr($row['year']); ?>" style="width:100%;"></td>
+                                    <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][course]" value="<?php echo esc_attr($row['course']); ?>" style="width:100%;"></td>
+                                    <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][cccd]" value="<?php echo esc_attr($row['cccd']); ?>" style="width:100%;"></td>
+                                    <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][sbd]" value="<?php echo esc_attr($row['sbd']); ?>" style="width:100%;"></td>
+                                    <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][theory]" value="<?php echo esc_attr($row['theory']); ?>" style="width:100%;"></td>
+                                    <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][practice]" value="<?php echo esc_attr($row['practice']); ?>" style="width:100%;"></td>
+                                    <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][result]" value="<?php echo esc_attr($row['result']); ?>" style="width:100%;"></td>
+                                    <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][note]" value="<?php echo esc_attr($row['note']); ?>" style="width:100%;"></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <?php submit_button(__('Lưu chỉnh sửa kết quả thi', 'alpha-edu')); ?>
+                <p class="description"><?php esc_html_e('Dòng thiếu Năm, Khóa thi hoặc CCCD sẽ không được lưu.', 'alpha-edu'); ?></p>
+            </form>
+        <?php endif; ?>
+    </div>
+    <?php
+}
+
+function alpha_edu_get_documents_data() {
+    $documents = get_option('alpha_edu_documents_data', []);
+
+    if (! is_array($documents)) {
+        return [];
+    }
+
+    return array_values(array_filter(array_map(function ($document) {
+        if (! is_array($document)) {
+            return null;
+        }
+
+        return [
+            'title'       => alpha_edu_clean_exam_cell($document['title'] ?? ''),
+            'description' => alpha_edu_clean_exam_cell($document['description'] ?? ''),
+            'file_id'     => absint($document['file_id'] ?? 0),
+            'file_url'    => esc_url_raw($document['file_url'] ?? ''),
+        ];
+    }, $documents)));
+}
+
+function alpha_edu_register_documents_admin_page() {
+    $hook = add_menu_page(
+        __('Văn bản/Biểu mẫu', 'alpha-edu'),
+        __('Văn bản/Biểu mẫu', 'alpha-edu'),
+        'manage_options',
+        'alpha-edu-documents',
+        'alpha_edu_render_documents_admin_page',
+        'dashicons-media-document',
+        63
+    );
+
+    add_action('admin_enqueue_scripts', function ($hook_suffix) use ($hook) {
+        if ($hook_suffix === $hook) {
+            wp_enqueue_media();
+        }
+    });
+}
+add_action('admin_menu', 'alpha_edu_register_documents_admin_page');
+
+function alpha_edu_handle_documents_save() {
+    if (! current_user_can('manage_options')) {
+        wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'alpha-edu'));
+    }
+
+    check_admin_referer('alpha_edu_documents_save');
+
+    $documents = isset($_POST['alpha_documents']) && is_array($_POST['alpha_documents'])
+        ? wp_unslash($_POST['alpha_documents'])
+        : [];
+    $clean_documents = [];
+
+    foreach ($documents as $document) {
+        if (! is_array($document)) {
+            continue;
+        }
+
+        $file_id = absint($document['file_id'] ?? 0);
+        $file_url = esc_url_raw($document['file_url'] ?? '');
+        $title = alpha_edu_clean_exam_cell($document['title'] ?? '');
+        $description = alpha_edu_clean_exam_cell($document['description'] ?? '');
+
+        if ($file_id) {
+            $attachment_url = wp_get_attachment_url($file_id);
+
+            if ($attachment_url) {
+                $file_url = $attachment_url;
+            }
+        }
+
+        if ('' === $title && $file_id) {
+            $title = get_the_title($file_id);
+        }
+
+        if ('' === $title && $file_url) {
+            $title = basename(parse_url($file_url, PHP_URL_PATH));
+        }
+
+        if ('' === $title || '' === $file_url) {
+            continue;
+        }
+
+        $clean_documents[] = [
+            'title'       => $title,
+            'description' => $description,
+            'file_id'     => $file_id,
+            'file_url'    => $file_url,
+        ];
+    }
+
+    update_option('alpha_edu_documents_data', $clean_documents, false);
+
+    wp_safe_redirect(add_query_arg('alpha_documents_status', 'saved', wp_get_referer()));
+    exit;
+}
+add_action('admin_post_alpha_edu_save_documents', 'alpha_edu_handle_documents_save');
+
+function alpha_edu_render_documents_admin_page() {
+    $documents = alpha_edu_get_documents_data();
+    $status = isset($_GET['alpha_documents_status']) ? sanitize_key(wp_unslash($_GET['alpha_documents_status'])) : '';
+    ?>
+    <div class="wrap">
+        <h1><?php esc_html_e('Quản lý văn bản/Biểu mẫu', 'alpha-edu'); ?></h1>
+
+        <?php if ('saved' === $status) : ?>
+            <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã lưu danh sách văn bản/Biểu mẫu.', 'alpha-edu'); ?></p></div>
+        <?php endif; ?>
+
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+            <?php wp_nonce_field('alpha_edu_documents_save'); ?>
+            <input type="hidden" name="action" value="alpha_edu_save_documents">
+
+            <p><?php esc_html_e('Thêm các file PDF/Word/Excel vào đây, trang Văn bản/Biểu mẫu ngoài website sẽ tự hiển thị danh sách tải xuống.', 'alpha-edu'); ?></p>
+
+            <table class="widefat striped" style="max-width:1200px;" data-alpha-documents-table>
+                <thead>
+                    <tr>
+                        <th style="width:32%;"><?php esc_html_e('Tiêu đề', 'alpha-edu'); ?></th>
+                        <th style="width:30%;"><?php esc_html_e('Mô tả', 'alpha-edu'); ?></th>
+                        <th><?php esc_html_e('File', 'alpha-edu'); ?></th>
+                        <th style="width:90px;"><?php esc_html_e('Xóa', 'alpha-edu'); ?></th>
+                    </tr>
+                </thead>
+                <tbody data-alpha-documents-body>
+                    <?php foreach ($documents as $index => $document) : ?>
+                        <tr>
+                            <td><input type="text" name="alpha_documents[<?php echo esc_attr($index); ?>][title]" value="<?php echo esc_attr($document['title']); ?>" style="width:100%;"></td>
+                            <td><input type="text" name="alpha_documents[<?php echo esc_attr($index); ?>][description]" value="<?php echo esc_attr($document['description']); ?>" style="width:100%;"></td>
+                            <td>
+                                <input type="hidden" name="alpha_documents[<?php echo esc_attr($index); ?>][file_id]" value="<?php echo esc_attr($document['file_id']); ?>" data-alpha-document-file-id>
+                                <input type="url" name="alpha_documents[<?php echo esc_attr($index); ?>][file_url]" value="<?php echo esc_url($document['file_url']); ?>" style="width:72%;" data-alpha-document-file-url>
+                                <button type="button" class="button" data-alpha-document-select><?php esc_html_e('Chọn file', 'alpha-edu'); ?></button>
+                            </td>
+                            <td><button type="button" class="button-link-delete" data-alpha-document-remove><?php esc_html_e('Xóa', 'alpha-edu'); ?></button></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+
+            <p>
+                <button type="button" class="button" data-alpha-document-add><?php esc_html_e('Thêm văn bản/Biểu mẫu', 'alpha-edu'); ?></button>
+            </p>
+
+            <?php submit_button(__('Lưu danh sách', 'alpha-edu')); ?>
+        </form>
+
+        <script type="text/html" id="tmpl-alpha-document-row">
+            <tr>
+                <td><input type="text" name="alpha_documents[__INDEX__][title]" value="" style="width:100%;"></td>
+                <td><input type="text" name="alpha_documents[__INDEX__][description]" value="" style="width:100%;"></td>
+                <td>
+                    <input type="hidden" name="alpha_documents[__INDEX__][file_id]" value="" data-alpha-document-file-id>
+                    <input type="url" name="alpha_documents[__INDEX__][file_url]" value="" style="width:72%;" data-alpha-document-file-url>
+                    <button type="button" class="button" data-alpha-document-select><?php esc_html_e('Chọn file', 'alpha-edu'); ?></button>
+                </td>
+                <td><button type="button" class="button-link-delete" data-alpha-document-remove><?php esc_html_e('Xóa', 'alpha-edu'); ?></button></td>
+            </tr>
+        </script>
+
+        <script>
+            jQuery(function ($) {
+                var body = $('[data-alpha-documents-body]');
+                var template = $('#tmpl-alpha-document-row').html();
+
+                $('[data-alpha-document-add]').on('click', function () {
+                    var index = Date.now();
+                    body.append(template.replace(/__INDEX__/g, index));
+                });
+
+                body.on('click', '[data-alpha-document-remove]', function () {
+                    $(this).closest('tr').remove();
+                });
+
+                body.on('click', '[data-alpha-document-select]', function (event) {
+                    event.preventDefault();
+
+                    var row = $(this).closest('tr');
+                    var frame = wp.media({
+                        title: '<?php echo esc_js(__('Chọn văn bản/Biểu mẫu', 'alpha-edu')); ?>',
+                        button: { text: '<?php echo esc_js(__('Dùng file này', 'alpha-edu')); ?>' },
+                        multiple: false
+                    });
+
+                    frame.on('select', function () {
+                        var attachment = frame.state().get('selection').first().toJSON();
+                        row.find('[data-alpha-document-file-id]').val(attachment.id || '');
+                        row.find('[data-alpha-document-file-url]').val(attachment.url || '');
+
+                        var titleInput = row.find('input[name$="[title]"]');
+
+                        if (!titleInput.val()) {
+                            titleInput.val(attachment.title || attachment.filename || '');
+                        }
+                    });
+
+                    frame.open();
+                });
+            });
+        </script>
     </div>
     <?php
 }

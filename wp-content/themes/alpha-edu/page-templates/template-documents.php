@@ -7,15 +7,41 @@
  */
 
 get_header();
+
+$documents = function_exists('alpha_edu_get_documents_data') ? alpha_edu_get_documents_data() : [];
 ?>
-<main class="content-page section-padding">
-    <div class="container content-layout">
+<main class="documents-page section-padding">
+    <div class="container documents-layout">
         <?php while (have_posts()) : the_post(); ?>
-            <article <?php post_class('entry-content'); ?>>
+            <header class="documents-header">
                 <h1><?php the_title(); ?></h1>
-                <?php the_content(); ?>
-            </article>
+                <?php if (trim(get_the_content())) : ?>
+                    <div class="documents-intro">
+                        <?php the_content(); ?>
+                    </div>
+                <?php endif; ?>
+            </header>
         <?php endwhile; ?>
+
+        <?php if ($documents) : ?>
+            <div class="documents-list">
+                <?php foreach ($documents as $document) : ?>
+                    <article class="document-item">
+                        <div class="document-info">
+                            <h2><?php echo esc_html($document['title']); ?></h2>
+                            <?php if ($document['description']) : ?>
+                                <p><?php echo esc_html($document['description']); ?></p>
+                            <?php endif; ?>
+                        </div>
+                        <a class="document-download" href="<?php echo esc_url($document['file_url']); ?>" target="_blank" rel="noopener">
+                            Tải xuống
+                        </a>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        <?php else : ?>
+            <p class="documents-empty">Chưa có văn bản/Biểu mẫu nào.</p>
+        <?php endif; ?>
     </div>
 </main>
 <?php
