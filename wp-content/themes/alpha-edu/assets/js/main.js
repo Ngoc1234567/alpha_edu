@@ -1,5 +1,7 @@
 (function () {
     document.addEventListener('DOMContentLoaded', function () {
+        document.body.classList.add('registration-js-ready');
+
         var menuToggle = document.querySelector('.mobile-menu-toggle');
         var mainNav = document.querySelector('.main-nav');
 
@@ -36,6 +38,92 @@
                     }
                 }
             });
+        }
+
+        var registrationToggle = document.querySelector('[data-registration-toggle]');
+        var registrationSection = document.getElementById('course-registration-form');
+
+        if (registrationToggle && registrationSection) {
+            function openRegistrationForm(shouldScroll) {
+                registrationSection.classList.add('is-open');
+                registrationToggle.setAttribute('aria-expanded', 'true');
+
+                if (shouldScroll) {
+                    window.setTimeout(function () {
+                        registrationSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }, 120);
+                }
+            }
+
+            registrationToggle.addEventListener('click', function (event) {
+                event.preventDefault();
+                openRegistrationForm(true);
+            });
+
+            if (window.location.search.indexOf('registration=success') !== -1) {
+                openRegistrationForm(false);
+            }
+        }
+
+        var registrationData = window.alphaEduRegistration || null;
+
+        if (registrationData) {
+            var typeSelect = document.querySelector('[name="registration-type"], [name="registration[type]"], [name="hinh-thuc"]');
+            var programSelect = document.querySelector('[name="registration-program"], [name="registration[program]"], [name="chuong-trinh"]');
+            var courseSelect = document.querySelector('[name="registration-course"], [name="registration[course]"], [name="khoa-dang-ky"]');
+            var scheduleSelect = document.querySelector('[name="registration-schedule"], [name="registration[schedule]"], [name="lich-hoc-thi"]');
+
+            function fillSelect(select, items, placeholder) {
+                if (!select) {
+                    return;
+                }
+
+                select.innerHTML = '';
+
+                var emptyOption = document.createElement('option');
+                emptyOption.value = '';
+                emptyOption.textContent = placeholder || '';
+                emptyOption.disabled = true;
+                emptyOption.selected = true;
+                select.appendChild(emptyOption);
+
+                (items || []).forEach(function (item) {
+                    var option = document.createElement('option');
+                    option.value = item;
+                    option.textContent = item;
+                    select.appendChild(option);
+                });
+            }
+
+            function updatePrograms() {
+                var type = typeSelect ? typeSelect.value : '';
+                var programs = registrationData.programs[type] || [];
+                fillSelect(programSelect, programs, registrationData.placeholders.program);
+
+                if (programs.length === 1 && programSelect) {
+                    programSelect.value = programs[0];
+                }
+
+                fillSelect(courseSelect, [], registrationData.placeholders.course);
+                fillSelect(scheduleSelect, registrationData.schedules[type] || [], registrationData.placeholders.schedule);
+                updateCourses();
+            }
+
+            function updateCourses() {
+                var type = typeSelect ? typeSelect.value : '';
+                var program = programSelect ? programSelect.value : '';
+                var coursesByType = registrationData.courses[type] || {};
+                fillSelect(courseSelect, coursesByType[program] || [], registrationData.placeholders.course);
+            }
+
+            if (typeSelect && programSelect && courseSelect && scheduleSelect) {
+                updatePrograms();
+                typeSelect.addEventListener('change', updatePrograms);
+                programSelect.addEventListener('change', updateCourses);
+            }
         }
 
         var statCounts = document.querySelectorAll('.stat-count[data-count]');

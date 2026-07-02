@@ -24,13 +24,21 @@ add_action('after_setup_theme', 'alpha_edu_setup');
 
 function alpha_edu_enqueue_assets() {
     $theme_version = wp_get_theme()->get('Version');
+    $main_css_path = get_template_directory() . '/assets/css/main.css';
+    $main_js_path  = get_template_directory() . '/assets/js/main.js';
+    $main_css_ver  = file_exists($main_css_path) ? (string) filemtime($main_css_path) : $theme_version;
+    $main_js_ver   = file_exists($main_js_path) ? (string) filemtime($main_js_path) : $theme_version;
 
     wp_enqueue_style('alpha-edu-fonts', 'https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap', [], null);
     wp_enqueue_style('swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css', [], '11');
-    wp_enqueue_style('alpha-edu-main', get_template_directory_uri() . '/assets/css/main.css', ['alpha-edu-fonts', 'swiper'], $theme_version);
+    wp_enqueue_style('alpha-edu-main', get_template_directory_uri() . '/assets/css/main.css', ['alpha-edu-fonts', 'swiper'], $main_css_ver);
 
     wp_enqueue_script('swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js', [], '11', true);
-    wp_enqueue_script('alpha-edu-main', get_template_directory_uri() . '/assets/js/main.js', ['swiper'], $theme_version, true);
+    wp_enqueue_script('alpha-edu-main', get_template_directory_uri() . '/assets/js/main.js', ['swiper'], $main_js_ver, true);
+
+    if (function_exists('alpha_edu_registration_options')) {
+        wp_localize_script('alpha-edu-main', 'alphaEduRegistration', alpha_edu_registration_options());
+    }
 }
 add_action('wp_enqueue_scripts', 'alpha_edu_enqueue_assets');
 
@@ -104,6 +112,7 @@ function alpha_edu_register_post_types() {
         'rewrite' => ['slug' => 'thong-bao'],
         'show_in_rest' => true,
     ]);
+
 }
 add_action('init', 'alpha_edu_register_post_types');
 
@@ -147,7 +156,7 @@ function alpha_edu_testimonial_admin_column_content($column, $post_id) {
     if (has_post_thumbnail($post_id)) {
         echo get_the_post_thumbnail($post_id, 'thumbnail', ['style' => 'width:88px;height:64px;object-fit:cover;border:1px solid #dcdcde;background:#fff;']);
     } else {
-        echo '<span aria-hidden="true">—</span>';
+        echo '<span aria-hidden="true">-</span>';
     }
 }
 add_action('manage_testimonial_posts_custom_column', 'alpha_edu_testimonial_admin_column_content', 10, 2);
@@ -283,6 +292,535 @@ function alpha_edu_enqueue_notice_images_admin_assets($hook_suffix) {
     );
 }
 add_action('admin_enqueue_scripts', 'alpha_edu_enqueue_notice_images_admin_assets');
+
+function alpha_edu_get_course_field($post_id, $key, $default = '') {
+    if (function_exists('get_field')) {
+        $acf_value = get_field($key, $post_id);
+
+        if ('' !== $acf_value && null !== $acf_value && false !== $acf_value) {
+            return $acf_value;
+        }
+    }
+
+    $value = get_post_meta($post_id, '_' . $key, true);
+
+    if ('' === $value || null === $value || false === $value) {
+        return $default;
+    }
+
+    return $value;
+}
+
+function alpha_edu_parse_course_fee_rows($value) {
+    $rows = [];
+    $lines = preg_split('/\r\n|\r|\n/', (string) $value);
+
+    foreach ($lines as $line) {
+        $line = trim($line);
+
+        if ('' === $line) {
+            continue;
+        }
+
+        $parts = array_map('trim', explode('|', $line));
+        $rows[] = [
+            'name'     => $parts[0] ?? '',
+            'tuition'  => $parts[1] ?? '',
+            'exam_fee' => $parts[2] ?? '',
+            'note'     => $parts[3] ?? '',
+        ];
+    }
+
+    return $rows;
+}
+
+function alpha_edu_get_course_registration_items($value) {
+    $items = [];
+    $lines = preg_split('/\r\n|\r|\n/', (string) $value);
+
+    foreach ($lines as $line) {
+        $line = trim($line);
+
+        if ('' !== $line) {
+            $items[] = $line;
+        }
+    }
+
+    return $items;
+}
+
+function alpha_edu_register_course_details_meta_box() {
+    add_meta_box(
+        'alpha-course-details',
+        __('Chi tiết khóa học', 'alpha-edu'),
+        'alpha_edu_render_course_details_meta_box',
+        'course',
+        'normal',
+        'high'
+    );
+}
+add_action('add_meta_boxes_course', 'alpha_edu_register_course_details_meta_box');
+
+function alpha_edu_render_course_details_meta_box($post) {
+    wp_nonce_field('alpha_edu_save_course_details', 'alpha_edu_course_details_nonce');
+
+    $intro         = alpha_edu_get_course_field($post->ID, 'course_detail_intro');
+    $fees          = alpha_edu_get_course_field($post->ID, 'course_fee_rows');
+    $guide_title   = alpha_edu_get_course_field($post->ID, 'course_registration_title', 'HƯỚNG DẪN ĐĂNG KÝ:');
+    $guide         = alpha_edu_get_course_field($post->ID, 'course_registration_items');
+    $button_text   = alpha_edu_get_course_field($post->ID, 'course_register_button_text', 'ĐĂNG KÝ TẠI ĐÂY');
+    $button_url    = alpha_edu_get_course_field($post->ID, 'course_register_button_url');
+    $cf7_shortcode = alpha_edu_get_course_field($post->ID, 'course_cf7_shortcode');
+    ?>
+    <style>
+        .alpha-course-fields{display:grid;gap:18px}
+        .alpha-course-fields label{display:block;font-weight:700;margin-bottom:6px}
+        .alpha-course-fields input[type="text"],
+        .alpha-course-fields input[type="url"],
+        .alpha-course-fields textarea{width:100%}
+        .alpha-course-fields textarea{min-height:118px}
+        .alpha-course-help{margin:6px 0 0;color:#646970}
+    </style>
+    <div class="alpha-course-fields">
+        <div>
+            <label for="alpha-course-detail-intro"><?php esc_html_e('Giới thiệu khóa học', 'alpha-edu'); ?></label>
+            <textarea id="alpha-course-detail-intro" name="alpha_course_details[course_detail_intro]"><?php echo esc_textarea($intro); ?></textarea>
+            <p class="alpha-course-help"><?php esc_html_e('Nếu bỏ trống, trang chi tiết sẽ dùng nội dung trong trình soạn thảo chính.', 'alpha-edu'); ?></p>
+        </div>
+        <div>
+            <label for="alpha-course-fee-rows"><?php esc_html_e('Bảng học phí', 'alpha-edu'); ?></label>
+            <textarea id="alpha-course-fee-rows" name="alpha_course_details[course_fee_rows]" placeholder="Khóa CNTT cơ bản | 1.150.000 VND | 750.000 VND&#10;Khóa CNTT nâng cao | 1.800.000 VND | 1.500.000 VND | Phải có chứng chỉ CNTT cơ bản"><?php echo esc_textarea($fees); ?></textarea>
+            <p class="alpha-course-help"><?php esc_html_e('Mỗi dòng: Tên khóa | Học phí | Lệ phí thi | Ghi chú.', 'alpha-edu'); ?></p>
+        </div>
+        <div>
+            <label for="alpha-course-registration-title"><?php esc_html_e('Tiêu đề hướng dẫn đăng ký', 'alpha-edu'); ?></label>
+            <input id="alpha-course-registration-title" type="text" name="alpha_course_details[course_registration_title]" value="<?php echo esc_attr($guide_title); ?>">
+        </div>
+        <div>
+            <label for="alpha-course-registration-items"><?php esc_html_e('Nội dung hướng dẫn đăng ký', 'alpha-edu'); ?></label>
+            <textarea id="alpha-course-registration-items" name="alpha_course_details[course_registration_items]" placeholder="Đăng ký trực tiếp&#10;- Cơ sở 1: Số 04/56 Đường Đặng Huy Trứ, Thành Phố Huế&#10;Đăng ký qua Hotline - Zalo 0796 670 717 (Alpha Center)"><?php echo esc_textarea($guide); ?></textarea>
+            <p class="alpha-course-help"><?php esc_html_e('Mỗi dòng sẽ hiển thị thành một dòng hướng dẫn. Dòng bắt đầu bằng dấu - sẽ là dòng phụ.', 'alpha-edu'); ?></p>
+        </div>
+        <div>
+            <label for="alpha-course-register-button-text"><?php esc_html_e('Chữ trên nút đăng ký', 'alpha-edu'); ?></label>
+            <input id="alpha-course-register-button-text" type="text" name="alpha_course_details[course_register_button_text]" value="<?php echo esc_attr($button_text); ?>">
+        </div>
+        <div>
+            <label for="alpha-course-register-button-url"><?php esc_html_e('Link nút đăng ký', 'alpha-edu'); ?></label>
+            <input id="alpha-course-register-button-url" type="url" name="alpha_course_details[course_register_button_url]" value="<?php echo esc_url($button_url); ?>" placeholder="<?php echo esc_attr(home_url('/dang-ky-hoc/')); ?>">
+        </div>
+        <div>
+            <label for="alpha-course-cf7-shortcode"><?php esc_html_e('Shortcode Contact Form 7', 'alpha-edu'); ?></label>
+            <input id="alpha-course-cf7-shortcode" type="text" name="alpha_course_details[course_cf7_shortcode]" value="<?php echo esc_attr($cf7_shortcode); ?>" placeholder='[contact-form-7 id="123" title="Form đăng ký học/thi"]'>
+            <p class="alpha-course-help"><?php esc_html_e('Nếu bỏ trống, hệ thống sẽ tự tìm form Contact Form 7 có chữ “đăng ký”, hoặc lấy form đầu tiên.', 'alpha-edu'); ?></p>
+        </div>
+    </div>
+    <?php
+}
+function alpha_edu_save_course_details($post_id) {
+    if (
+        ! isset($_POST['alpha_edu_course_details_nonce'])
+        || ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['alpha_edu_course_details_nonce'])), 'alpha_edu_save_course_details')
+    ) {
+        return;
+    }
+
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+
+    if (! current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    $fields = isset($_POST['alpha_course_details']) && is_array($_POST['alpha_course_details'])
+        ? wp_unslash($_POST['alpha_course_details'])
+        : [];
+
+    $textareas = ['course_detail_intro', 'course_fee_rows', 'course_registration_items'];
+    $texts     = ['course_registration_title', 'course_register_button_text', 'course_cf7_shortcode'];
+    $urls      = ['course_register_button_url'];
+
+    foreach ($textareas as $key) {
+        update_post_meta($post_id, '_' . $key, sanitize_textarea_field($fields[$key] ?? ''));
+    }
+
+    foreach ($texts as $key) {
+        update_post_meta($post_id, '_' . $key, sanitize_text_field($fields[$key] ?? ''));
+    }
+
+    foreach ($urls as $key) {
+        update_post_meta($post_id, '_' . $key, esc_url_raw($fields[$key] ?? ''));
+    }
+}
+add_action('save_post_course', 'alpha_edu_save_course_details');
+
+function alpha_edu_registration_fields() {
+    return [
+        'last_name'     => 'Họ và tên đệm',
+        'first_name'    => 'Tên',
+        'birthday'      => 'Ngày sinh',
+        'birthplace'    => 'Nơi sinh',
+        'phone'         => 'Số điện thoại',
+        'email'         => 'Email',
+        'cccd'          => 'Số CCCD',
+        'cccd_date'     => 'Ngày cấp CCCD',
+        'address'       => 'Địa chỉ thường trú',
+        'organization'  => 'Đơn vị công tác/ Đào tạo',
+        'type'          => 'Hình thức',
+        'program'       => 'Chương trình',
+        'course'        => 'Khóa đăng ký',
+        'schedule'      => 'Lịch học/ lịch thi',
+        'supporter'     => 'Nhân viên hướng dẫn/ hỗ trợ',
+        'note'          => 'Ghi chú',
+        'source_course' => 'Khóa học nguồn',
+    ];
+}
+
+function alpha_edu_get_registration_exam_schedules() {
+    $value = get_option('alpha_registration_exam_schedules', '');
+    $lines = preg_split('/\r\n|\r|\n/', (string) $value);
+    $items = [];
+
+    foreach ($lines as $line) {
+        $line = trim($line);
+
+        if ('' !== $line) {
+            $items[] = $line;
+        }
+    }
+
+    return $items;
+}
+
+function alpha_edu_registration_options() {
+    return [
+        'programs' => [
+            'Đăng ký học' => ['Tiếng Anh', 'Tin học', 'Tiếng Trung'],
+            'Đăng ký thi' => ['Tin học'],
+        ],
+        'courses' => [
+            'Đăng ký học' => [
+                'Tiếng Anh' => [
+                    'B1 VSTEP',
+                    'B1 VSTEP (Tự do)',
+                    'A2 - B1 Aptis (Đào tạo)',
+                    'B2 Aptis (Đào tạo)',
+                    'B1 Aptis (Cấp tốc)',
+                    'B2 Aptis (Cấp tốc)',
+                    'A2 - B1 VEPT (Đào tạo)',
+                    'A2 VEPT (Cấp tốc)',
+                    'B1 VEPT (Cấp tốc)',
+                    'Học Viên An Ninh',
+                    'B1 Chứng nhận ĐHNN Huế (Cấp tốc)',
+                    'B2 Chứng nhận ĐHNN Huế (Cấp tốc)',
+                    'B1 Chứng nhận ĐHNN Huế (Dài hạn)',
+                ],
+                'Tin học' => ['CNTT Cơ Bản', 'CNTT Nâng Cao'],
+                'Tiếng Trung' => ['HSK 1', 'HSK 2', 'HSK 3'],
+            ],
+            'Đăng ký thi' => [
+                'Tin học' => ['CNTT Cơ Bản', 'CNTT Nâng Cao'],
+            ],
+        ],
+        'schedules' => [
+            'Đăng ký học' => [
+                'Thứ 2,4,6 17h30',
+                'Thứ 3,5,7, 17h30',
+                'Thứ 2,4,6 19h00',
+                'Thứ 3,5,7 19H00',
+                'Khác (Vui lòng liên hệ trực tiếp ở fanpage để được hỗ trợ)',
+            ],
+            'Đăng ký thi' => alpha_edu_get_registration_exam_schedules(),
+        ],
+        'placeholders' => [
+            'program' => '(Chọn chương trình)',
+            'course' => '(Chọn khóa đăng ký)',
+            'schedule' => '(Chọn lịch học/ lịch thi)',
+        ],
+    ];
+}
+
+function alpha_edu_get_registration_cf7_shortcode($post_id = 0) {
+    $shortcode = $post_id ? alpha_edu_get_course_field($post_id, 'course_cf7_shortcode') : '';
+
+    if (! $shortcode) {
+        $shortcode = get_option('alpha_registration_cf7_shortcode', '');
+    }
+
+    if ($shortcode) {
+        return $shortcode;
+    }
+
+    if (! post_type_exists('wpcf7_contact_form')) {
+        return '';
+    }
+
+    $forms = get_posts([
+        'post_type'      => 'wpcf7_contact_form',
+        'posts_per_page' => -1,
+        'post_status'    => 'any',
+        'orderby'        => 'date',
+        'order'          => 'ASC',
+    ]);
+
+    if (! $forms) {
+        return '';
+    }
+
+    $selected = $forms[0];
+
+    foreach ($forms as $form) {
+        if (false !== stripos(remove_accents($form->post_title), 'dang ky')) {
+            $selected = $form;
+            break;
+        }
+    }
+
+    return sprintf('[contact-form-7 id="%d" title="%s"]', (int) $selected->ID, esc_attr($selected->post_title));
+}
+
+function alpha_edu_registration_cf7_form_template() {
+    return trim(<<<'CF7'
+<label> Họ và tên đệm (*)
+    [text* registration-last-name] </label>
+
+<label> Tên (*)
+    [text* registration-first-name] </label>
+
+<label> Ngày sinh (*)
+    [text* registration-birthday] </label>
+
+<label> Nơi sinh (*)
+    [text* registration-birthplace] </label>
+
+<label> Số điện thoại (*)
+    [tel* registration-phone] </label>
+
+<label> Email (*)
+    [email* registration-email] </label>
+
+<label> Số CCCD (*)
+    [text* registration-cccd] </label>
+
+<label> Ngày cấp CCCD (*)
+    [text* registration-cccd-date] </label>
+
+<label> Địa chỉ thường trú (*)
+    [text* registration-address] </label>
+
+<label> Đơn vị công tác/ Đào tạo (Nếu không có điền "Không có") (*)
+    [text* registration-organization] </label>
+
+<label> Hình thức (*)
+    [select* registration-type first_as_label "(Chọn hình thức)" "Đăng ký học" "Đăng ký thi"] </label>
+
+<label> Chương trình (*)
+    [select* registration-program first_as_label "(Chọn chương trình)" "Tiếng Anh" "Tin học" "Tiếng Trung"] </label>
+
+<label> Khóa đăng ký (*)
+    [select* registration-course first_as_label "(Chọn khóa đăng ký)" "CNTT Cơ Bản" "CNTT Nâng Cao"] </label>
+
+<label> Lịch học/ lịch thi (*)
+    [select* registration-schedule first_as_label "(Chọn lịch học/ lịch thi)" "Thứ 2,4,6 17h30" "Thứ 3,5,7, 17h30" "Thứ 2,4,6 19h00" "Thứ 3,5,7 19H00" "Khác (Vui lòng liên hệ trực tiếp ở fanpage để được hỗ trợ)"] </label>
+
+<label> Nhân viên hướng dẫn/ hỗ trợ (*)
+    [text* registration-supporter] </label>
+
+<label> Ghi chú (*)
+    [textarea* registration-note] </label>
+
+[submit "ĐĂNG KÝ NGAY"]
+CF7);
+}
+
+function alpha_edu_registration_cf7_mail_template() {
+    return [
+        'subject' => 'Đăng ký mới từ [registration-last-name] [registration-first-name]',
+        'sender' => '[_site_title] <wordpress@[_site_domain]>',
+        'body' => trim(<<<'MAIL'
+Thông tin đăng ký mới:
+
+Họ và tên đệm: [registration-last-name]
+Tên: [registration-first-name]
+Ngày sinh: [registration-birthday]
+Nơi sinh: [registration-birthplace]
+Số điện thoại: [registration-phone]
+Email: [registration-email]
+Số CCCD: [registration-cccd]
+Ngày cấp CCCD: [registration-cccd-date]
+Địa chỉ thường trú: [registration-address]
+Đơn vị công tác/ Đào tạo: [registration-organization]
+Hình thức: [registration-type]
+Chương trình: [registration-program]
+Khóa đăng ký: [registration-course]
+Lịch học/ lịch thi: [registration-schedule]
+Nhân viên hướng dẫn/ hỗ trợ: [registration-supporter]
+Ghi chú:
+[registration-note]
+
+--
+Gửi từ website [_site_title] - [_site_url]
+MAIL),
+        'recipient' => '[_site_admin_email]',
+        'additional_headers' => 'Reply-To: [registration-email]',
+        'attachments' => '',
+        'use_html' => 0,
+        'exclude_blank' => 0,
+    ];
+}
+
+function alpha_edu_registration_cf7_messages_template() {
+    return [
+        'mail_sent_ok' => 'Cảm ơn bạn. Thông tin đăng ký đã được gửi thành công.',
+        'mail_sent_ng' => 'Có lỗi khi gửi thông tin. Vui lòng thử lại sau.',
+        'validation_error' => 'Có một hoặc nhiều trường chưa đúng. Vui lòng kiểm tra lại.',
+        'spam' => 'Có lỗi khi gửi thông tin. Vui lòng thử lại sau.',
+        'accept_terms' => 'Vui lòng chấp nhận điều khoản trước khi gửi.',
+        'invalid_required' => 'Vui lòng nhập thông tin bắt buộc.',
+        'invalid_too_long' => 'Nội dung nhập quá dài.',
+        'invalid_too_short' => 'Nội dung nhập quá ngắn.',
+        'upload_failed' => 'Không thể tải file lên.',
+        'upload_file_type_invalid' => 'Định dạng file không được hỗ trợ.',
+        'upload_file_too_large' => 'File tải lên quá lớn.',
+        'upload_failed_php_error' => 'Có lỗi khi tải file lên.',
+        'invalid_date' => 'Vui lòng nhập ngày hợp lệ.',
+        'date_too_early' => 'Ngày nhập quá sớm.',
+        'date_too_late' => 'Ngày nhập quá muộn.',
+        'invalid_number' => 'Vui lòng nhập số hợp lệ.',
+        'number_too_small' => 'Số nhập quá nhỏ.',
+        'number_too_large' => 'Số nhập quá lớn.',
+        'quiz_answer_not_correct' => 'Câu trả lời chưa chính xác.',
+        'captcha_not_match' => 'Mã xác nhận chưa chính xác.',
+        'invalid_email' => 'Vui lòng nhập email hợp lệ.',
+        'invalid_url' => 'Vui lòng nhập đường dẫn hợp lệ.',
+        'invalid_tel' => 'Vui lòng nhập số điện thoại hợp lệ.',
+    ];
+}
+
+function alpha_edu_ensure_registration_cf7_form() {
+    if (! current_user_can('manage_options') || ! function_exists('wpcf7_save_contact_form')) {
+        return;
+    }
+
+    $template_version = '2026-07-03-3';
+    $title = 'Alpha - Form đăng ký học/thi';
+    $form_id = (int) get_option('alpha_registration_cf7_form_id', 0);
+    $form_post = $form_id ? get_post($form_id) : null;
+
+    if (! $form_post || 'wpcf7_contact_form' !== $form_post->post_type) {
+        $existing = get_page_by_title($title, OBJECT, 'wpcf7_contact_form');
+        $form_id = $existing ? (int) $existing->ID : -1;
+        $form_post = $form_id > 0 ? get_post($form_id) : null;
+    }
+
+    if ($form_post && $template_version === get_option('alpha_registration_cf7_template_version')) {
+        update_option('alpha_registration_cf7_shortcode', sprintf('[contact-form-7 id="%d" title="%s"]', (int) $form_post->ID, $title));
+        return;
+    }
+
+    $contact_form = wpcf7_save_contact_form([
+        'id' => $form_id ?: -1,
+        'title' => $title,
+        'locale' => get_locale(),
+        'form' => alpha_edu_registration_cf7_form_template(),
+        'mail' => alpha_edu_registration_cf7_mail_template(),
+        'messages' => alpha_edu_registration_cf7_messages_template(),
+        'additional_settings' => '',
+    ]);
+
+    if ($contact_form && method_exists($contact_form, 'id')) {
+        $new_id = (int) $contact_form->id();
+        update_option('alpha_registration_cf7_form_id', $new_id);
+        update_option('alpha_registration_cf7_shortcode', sprintf('[contact-form-7 id="%d" title="%s"]', $new_id, $title));
+        update_option('alpha_registration_cf7_template_version', $template_version);
+    }
+}
+add_action('admin_init', 'alpha_edu_ensure_registration_cf7_form');
+
+function alpha_edu_render_registration_form($source_course_id = 0) {
+    $shortcode = alpha_edu_get_registration_cf7_shortcode($source_course_id);
+    ?>
+    <section id="course-registration-form" class="alpha-registration-section" aria-labelledby="alpha-registration-title">
+        <div class="alpha-registration-arrow" aria-hidden="true"></div>
+
+        <div class="alpha-registration-form alpha-registration-form-cf7">
+            <header class="alpha-registration-header">
+                <h2 id="alpha-registration-title"><?php esc_html_e('FORM ĐĂNG KÝ HỌC/ ĐĂNG KÝ THI', 'alpha-edu'); ?></h2>
+                <p><?php esc_html_e('Hãy để lại thông tin để Alpha hỗ trợ cho bạn nhé.', 'alpha-edu'); ?></p>
+            </header>
+
+            <?php if ($shortcode && shortcode_exists('contact-form-7')) : ?>
+                <?php echo do_shortcode($shortcode); ?>
+            <?php else : ?>
+                <p class="alpha-registration-success"><?php esc_html_e('Vui lòng tạo form Contact Form 7 hoặc nhập shortcode CF7 trong phần Chi tiết khóa học.', 'alpha-edu'); ?></p>
+            <?php endif; ?>
+        </div>
+    </section>
+    <?php
+}
+function alpha_edu_register_registration_settings() {
+    register_setting('alpha_registration_settings', 'alpha_registration_cf7_shortcode', [
+        'type'              => 'string',
+        'sanitize_callback' => 'sanitize_text_field',
+        'default'           => '',
+    ]);
+
+    register_setting('alpha_registration_settings', 'alpha_registration_exam_schedules', [
+        'type'              => 'string',
+        'sanitize_callback' => 'sanitize_textarea_field',
+        'default'           => '',
+    ]);
+}
+add_action('admin_init', 'alpha_edu_register_registration_settings');
+
+function alpha_edu_register_registration_settings_page() {
+    $parent_slug = menu_page_url('wpcf7', false) ? 'wpcf7' : 'options-general.php';
+
+    add_submenu_page(
+        $parent_slug,
+        __('Cài đặt form đăng ký', 'alpha-edu'),
+        __('Cài đặt form đăng ký', 'alpha-edu'),
+        'manage_options',
+        'alpha-registration-settings',
+        'alpha_edu_render_registration_settings_page'
+    );
+}
+add_action('admin_menu', 'alpha_edu_register_registration_settings_page', 20);
+
+function alpha_edu_render_registration_settings_page() {
+    ?>
+    <div class="wrap">
+        <h1><?php esc_html_e('Cài đặt form đăng ký', 'alpha-edu'); ?></h1>
+        <form method="post" action="options.php">
+            <?php settings_fields('alpha_registration_settings'); ?>
+
+            <table class="form-table" role="presentation">
+                <tr>
+                    <th scope="row">
+                        <label for="alpha-registration-cf7-shortcode"><?php esc_html_e('Shortcode Contact Form 7 mặc định', 'alpha-edu'); ?></label>
+                    </th>
+                    <td>
+                        <input id="alpha-registration-cf7-shortcode" class="regular-text" type="text" name="alpha_registration_cf7_shortcode" value="<?php echo esc_attr(get_option('alpha_registration_cf7_shortcode', '')); ?>" placeholder='[contact-form-7 id="123" title="Form đăng ký học/thi"]'>
+                        <p class="description"><?php esc_html_e('Có thể nhập riêng shortcode trong từng khóa học. Nếu cả hai nơi đều trống, hệ thống tự lấy form CF7 có chữ “đăng ký” hoặc form đầu tiên.', 'alpha-edu'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="alpha-registration-exam-schedules"><?php esc_html_e('Lịch thi dự kiến', 'alpha-edu'); ?></label>
+                    </th>
+                    <td>
+                        <textarea id="alpha-registration-exam-schedules" class="large-text" rows="8" name="alpha_registration_exam_schedules"><?php echo esc_textarea(get_option('alpha_registration_exam_schedules', '')); ?></textarea>
+                        <p class="description"><?php esc_html_e('Mỗi dòng là một lịch thi để học viên chọn khi chọn Hình thức = Đăng ký thi.', 'alpha-edu'); ?></p>
+                    </td>
+                </tr>
+            </table>
+
+            <?php submit_button(__('Lưu cài đặt', 'alpha-edu')); ?>
+        </form>
+    </div>
+    <?php
+}
 
 function alpha_edu_asset_url($path) {
     return get_template_directory_uri() . '/assets/' . ltrim($path, '/');

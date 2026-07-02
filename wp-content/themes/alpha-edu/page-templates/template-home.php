@@ -111,9 +111,9 @@ get_header();
                 <?php
                 while ($course_query->have_posts()) :
                     $course_query->the_post();
-                    $color = get_field('course_color') === 'red' ? 'red' : 'blue';
-                    $desc  = get_field('course_short_description');
-                    $link  = get_field('course_link');
+                    $color = function_exists('get_field') && get_field('course_color') === 'red' ? 'red' : 'blue';
+                    $desc  = function_exists('get_field') ? get_field('course_short_description') : '';
+                    $link  = function_exists('get_field') ? get_field('course_link') : '';
                     $url   = is_array($link) && ! empty($link['url']) ? $link['url'] : get_permalink();
                     $label = is_array($link) && ! empty($link['title']) ? $link['title'] : __('Tìm hiểu về khóa học', 'alpha-edu');
                     ?>

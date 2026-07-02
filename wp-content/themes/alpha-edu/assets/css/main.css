@@ -1087,6 +1087,453 @@ a {
     font-weight: 700;
 }
 
+.course-detail-page {
+    background: #fff;
+}
+
+.course-detail {
+    padding-top: 48px;
+}
+
+.course-detail-inner {
+    max-width: 980px;
+}
+
+.course-detail-header h1 {
+    margin: 0 0 20px;
+    color: var(--alpha-blue);
+    font-size: clamp(34px, 6vw, 58px);
+    line-height: 1.05;
+    font-weight: 900;
+    letter-spacing: 0;
+}
+
+.course-detail-intro {
+    color: #111;
+    font-size: 23px;
+    line-height: 1.35;
+    font-weight: 700;
+}
+
+.course-detail-intro p {
+    margin: 0 0 16px;
+}
+
+.course-fee-table-wrap {
+    margin: 42px 0;
+    overflow-x: auto;
+}
+
+.course-fee-table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border: 1px solid #8c8c8c;
+}
+
+.course-fee-table th {
+    padding: 15px 18px;
+    border: 1px solid #155fc7;
+    background: var(--alpha-blue);
+    color: #fff;
+    text-align: center;
+    font-size: 30px;
+    line-height: 1.1;
+    font-weight: 900;
+}
+
+.course-fee-table td {
+    min-height: 64px;
+    padding: 16px 18px;
+    border: 1px solid #9b9b9b;
+    color: #080808;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 900;
+}
+
+.course-fee-table td strong {
+    display: block;
+    font-size: 22px;
+}
+
+.course-fee-table td small {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.25;
+    font-weight: 800;
+}
+
+.course-registration-guide {
+    margin-top: 28px;
+}
+
+.course-registration-guide h2 {
+    margin: 0 0 18px;
+    color: var(--alpha-blue);
+    font-size: clamp(28px, 4vw, 36px);
+    line-height: 1.15;
+    font-weight: 900;
+}
+
+.course-registration-list {
+    display: grid;
+    gap: 13px;
+}
+
+.course-registration-list p {
+    margin: 0;
+    color: #080808;
+    font-size: 25px;
+    line-height: 1.25;
+    font-weight: 900;
+}
+
+.course-registration-list .is-main-item {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+}
+
+.course-registration-list .is-sub-item {
+    padding-left: 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.course-registration-icon {
+    position: relative;
+    display: inline-block;
+    width: 43px;
+    height: 34px;
+}
+
+.course-registration-icon::before,
+.course-registration-icon::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    width: 19px;
+    height: 28px;
+    background: var(--alpha-red);
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px var(--alpha-red);
+}
+
+.course-registration-icon::before {
+    left: 2px;
+    transform: skewY(10deg);
+}
+
+.course-registration-icon::after {
+    right: 2px;
+    transform: skewY(-10deg);
+}
+
+.course-register-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 70px;
+    margin-top: 28px;
+    padding: 0 28px;
+    border-radius: 18px;
+    background: var(--alpha-red);
+    color: #fff;
+    text-align: center;
+    font-size: clamp(24px, 4vw, 34px);
+    line-height: 1.1;
+    font-weight: 900;
+    box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.12);
+}
+
+.course-register-button:hover,
+.course-register-button:focus-visible {
+    background: #d91827;
+    color: #fff;
+}
+
+.alpha-registration-section {
+    margin-top: 18px;
+    max-height: none;
+    opacity: 1;
+    overflow: visible;
+    transform: translateY(0);
+    transition: max-height 650ms cubic-bezier(0.22, 1, 0.36, 1), opacity 360ms ease, transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.registration-js-ready .alpha-registration-section {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateY(-18px);
+}
+
+.registration-js-ready .alpha-registration-section.is-open {
+    max-height: 2600px;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.alpha-registration-arrow {
+    width: 0;
+    height: 0;
+    margin: 12px auto 14px;
+    border-left: 18px solid transparent;
+    border-right: 18px solid transparent;
+    border-top: 0;
+    border-bottom: 42px solid var(--alpha-blue);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transition: opacity 300ms ease 140ms, transform 420ms cubic-bezier(0.22, 1, 0.36, 1) 140ms;
+}
+
+.registration-js-ready .alpha-registration-section .alpha-registration-arrow {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.82);
+}
+
+.registration-js-ready .alpha-registration-section.is-open .alpha-registration-arrow {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.alpha-registration-form {
+    padding: 26px 24px 22px;
+    border-radius: 10px;
+    background: var(--alpha-blue);
+    color: #fff;
+    transform: translateY(0) scale(1);
+    transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 520ms ease;
+}
+
+.registration-js-ready .alpha-registration-section .alpha-registration-form {
+    transform: translateY(-10px) scale(0.985);
+}
+
+.registration-js-ready .alpha-registration-section.is-open .alpha-registration-form {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 18px 42px rgba(18, 94, 199, 0.22);
+}
+
+.alpha-registration-header {
+    margin-bottom: 24px;
+}
+
+.alpha-registration-header h2 {
+    margin: 0 0 8px;
+    color: #fff;
+    font-size: clamp(24px, 4vw, 34px);
+    line-height: 1.1;
+    font-weight: 900;
+}
+
+.alpha-registration-header p {
+    margin: 0;
+    color: #fff;
+    font-size: 16px;
+    line-height: 1.35;
+    font-weight: 800;
+}
+
+.alpha-registration-success {
+    margin: 0 0 18px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--alpha-blue-dark);
+    font-size: 16px;
+    line-height: 1.35;
+    font-weight: 900;
+}
+
+.alpha-registration-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 16px;
+}
+
+.alpha-registration-grid label {
+    min-width: 0;
+}
+
+.alpha-registration-grid span {
+    display: block;
+    margin: 0 0 6px;
+    color: #fff;
+    font-size: 15px;
+    line-height: 1.2;
+    font-weight: 900;
+}
+
+.alpha-registration-grid input,
+.alpha-registration-grid select,
+.alpha-registration-grid textarea {
+    width: 100%;
+    min-height: 40px;
+    border: 0;
+    border-radius: 999px;
+    background: #fff;
+    color: #111;
+    font-family: var(--alpha-font);
+    font-size: 15px;
+    font-weight: 800;
+    outline: none;
+}
+
+.alpha-registration-grid input,
+.alpha-registration-grid select {
+    padding: 0 14px;
+}
+
+.alpha-registration-grid select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, #111 50%), linear-gradient(135deg, #111 50%, transparent 50%);
+    background-position: calc(100% - 20px) 17px, calc(100% - 13px) 17px;
+    background-size: 8px 8px, 8px 8px;
+    background-repeat: no-repeat;
+    padding-right: 38px;
+}
+
+.alpha-registration-grid textarea {
+    min-height: 104px;
+    padding: 14px;
+    border-radius: 14px;
+    resize: vertical;
+}
+
+.alpha-registration-wide {
+    grid-column: 1 / -1;
+}
+
+.alpha-registration-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 54px;
+    margin-top: 22px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--alpha-red);
+    color: #fff;
+    font-family: var(--alpha-font);
+    font-size: clamp(22px, 4vw, 30px);
+    line-height: 1.1;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.14);
+}
+
+.alpha-registration-submit:hover,
+.alpha-registration-submit:focus-visible {
+    background: #d91827;
+}
+
+.alpha-registration-form-cf7 .wpcf7-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 16px;
+}
+
+.alpha-registration-form-cf7 .wpcf7-form > p,
+.alpha-registration-form-cf7 .wpcf7-form > label {
+    margin: 0;
+    min-width: 0;
+}
+
+.alpha-registration-form-cf7 .wpcf7-form > p:has(textarea),
+.alpha-registration-form-cf7 .wpcf7-form > p:has(input[type="submit"]),
+.alpha-registration-form-cf7 .wpcf7-form > label:has(textarea) {
+    grid-column: 1 / -1;
+}
+
+.alpha-registration-form-cf7 label {
+    display: block;
+    color: #fff;
+    font-size: 15px;
+    line-height: 1.2;
+    font-weight: 900;
+}
+
+.alpha-registration-form-cf7 .wpcf7-form-control-wrap {
+    display: block;
+    margin-top: 6px;
+}
+
+.alpha-registration-form-cf7 input:not([type="submit"]),
+.alpha-registration-form-cf7 select,
+.alpha-registration-form-cf7 textarea {
+    width: 100%;
+    min-height: 40px;
+    border: 0;
+    border-radius: 999px;
+    background: #fff;
+    color: #111;
+    font-family: var(--alpha-font);
+    font-size: 15px;
+    font-weight: 800;
+    outline: none;
+}
+
+.alpha-registration-form-cf7 input:not([type="submit"]),
+.alpha-registration-form-cf7 select {
+    padding: 0 14px;
+}
+
+.alpha-registration-form-cf7 select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, #111 50%), linear-gradient(135deg, #111 50%, transparent 50%);
+    background-position: calc(100% - 20px) 17px, calc(100% - 13px) 17px;
+    background-size: 8px 8px, 8px 8px;
+    background-repeat: no-repeat;
+    padding-right: 38px;
+}
+
+.alpha-registration-form-cf7 textarea {
+    min-height: 104px;
+    padding: 14px;
+    border-radius: 14px;
+    resize: vertical;
+}
+
+.alpha-registration-form-cf7 input[type="submit"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 54px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--alpha-red);
+    color: #fff;
+    font-family: var(--alpha-font);
+    font-size: clamp(22px, 4vw, 30px);
+    line-height: 1.1;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.14);
+}
+
+.alpha-registration-form-cf7 input[type="submit"]:hover,
+.alpha-registration-form-cf7 input[type="submit"]:focus-visible {
+    background: #d91827;
+}
+
+.alpha-registration-form-cf7 .wpcf7-response-output {
+    grid-column: 1 / -1;
+    margin: 4px 0 0;
+    border-color: #fff;
+    color: #fff;
+    font-weight: 800;
+}
+
 @media (max-width: 1120px) {
     .header-inner {
         gap: 12px;
@@ -1337,6 +1784,34 @@ a {
     .documents-header h1 {
         font-size: 36px;
     }
+
+    .course-detail {
+        padding-top: 36px;
+    }
+
+    .course-detail-intro {
+        font-size: 19px;
+    }
+
+    .course-fee-table th {
+        font-size: 24px;
+    }
+
+    .course-fee-table td {
+        font-size: 20px;
+    }
+
+    .course-registration-list p {
+        font-size: 21px;
+    }
+
+    .alpha-registration-form {
+        padding: 22px 18px 18px;
+    }
+
+    .alpha-registration-grid {
+        gap: 12px;
+    }
 }
 
 @media (max-width: 520px) {
@@ -1437,6 +1912,94 @@ a {
     .footer-contact-list li {
         grid-template-columns: 34px minmax(0, 1fr);
         gap: 12px;
+    }
+
+    .course-detail-header h1 {
+        margin-bottom: 16px;
+    }
+
+    .course-detail-intro {
+        font-size: 17px;
+    }
+
+    .course-fee-table-wrap {
+        margin: 28px 0;
+    }
+
+    .course-fee-table {
+        min-width: 620px;
+    }
+
+    .course-fee-table th {
+        padding: 12px;
+        font-size: 20px;
+    }
+
+    .course-fee-table td {
+        padding: 13px 12px;
+        font-size: 18px;
+    }
+
+    .course-fee-table td strong {
+        font-size: 17px;
+    }
+
+    .course-registration-list .is-main-item {
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 10px;
+    }
+
+    .course-registration-list p {
+        font-size: 18px;
+    }
+
+    .course-registration-list .is-sub-item {
+        font-size: 16px;
+    }
+
+    .course-registration-icon {
+        width: 35px;
+        height: 28px;
+    }
+
+    .course-registration-icon::before,
+    .course-registration-icon::after {
+        width: 15px;
+        height: 23px;
+    }
+
+    .course-register-button {
+        min-height: 58px;
+        border-radius: 14px;
+    }
+
+    .alpha-registration-arrow {
+        border-left-width: 15px;
+        border-right-width: 15px;
+        border-bottom-width: 34px;
+    }
+
+    .alpha-registration-form {
+        padding: 18px 14px 16px;
+        border-radius: 8px;
+    }
+
+    .alpha-registration-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .alpha-registration-form-cf7 .wpcf7-form {
+        grid-template-columns: 1fr;
+    }
+
+    .alpha-registration-grid span {
+        font-size: 14px;
+    }
+
+    .alpha-registration-grid input,
+    .alpha-registration-grid select,
+    .alpha-registration-grid textarea {
+        font-size: 14px;
     }
 
     .footer-contact-icon {
