@@ -77,6 +77,67 @@
             var courseSelect = document.querySelector('[name="registration-course"], [name="registration[course]"], [name="khoa-dang-ky"]');
             var scheduleSelect = document.querySelector('[name="registration-schedule"], [name="registration[schedule]"], [name="lich-hoc-thi"]');
 
+            function disableRegistrationChangeValidation() {
+                if (!window.wpcf7 || typeof window.wpcf7.validate !== 'function' || window.wpcf7.alphaRegistrationValidateWrapped) {
+                    return;
+                }
+
+                var originalValidate = window.wpcf7.validate;
+
+                window.wpcf7.validate = function (form, options) {
+                    if (options && options.target && options.target.closest('.alpha-registration-section')) {
+                        return;
+                    }
+
+                    return originalValidate.apply(this, arguments);
+                };
+
+                window.wpcf7.alphaRegistrationValidateWrapped = true;
+            }
+
+            function clearRegistrationValidation(form) {
+                if (!form) {
+                    return;
+                }
+
+                form.querySelectorAll('.wpcf7-not-valid').forEach(function (field) {
+                    field.classList.remove('wpcf7-not-valid');
+                    field.setAttribute('aria-invalid', 'false');
+                });
+
+                form.querySelectorAll('.wpcf7-not-valid-tip').forEach(function (tip) {
+                    tip.remove();
+                });
+
+                form.querySelectorAll('.wpcf7-form-control-wrap').forEach(function (wrap) {
+                    wrap.classList.remove('wpcf7-not-valid');
+                });
+
+                form.classList.remove('invalid');
+                form.classList.remove('failed');
+                form.classList.add('init');
+                form.setAttribute('data-status', 'init');
+
+                var response = form.querySelector('.wpcf7-response-output');
+
+                if (response) {
+                    response.textContent = '';
+                    response.setAttribute('aria-hidden', 'true');
+                }
+            }
+
+            function scheduleRegistrationValidationClear(form) {
+                clearRegistrationValidation(form);
+
+                window.requestAnimationFrame(function () {
+                    clearRegistrationValidation(form);
+                });
+
+                window.setTimeout(function () {
+                    clearRegistrationValidation(form);
+                }, 80);
+            }
+
             function fillSelect(select, items, placeholder) {
                 if (!select) {
                     return;
@@ -121,9 +182,24 @@
             }
 
             if (typeSelect && programSelect && courseSelect && scheduleSelect) {
+                disableRegistrationChangeValidation();
+                window.setTimeout(disableRegistrationChangeValidation, 0);
+
                 updatePrograms();
-                typeSelect.addEventListener('change', updatePrograms);
-                programSelect.addEventListener('change', updateCourses);
+                typeSelect.addEventListener('change', function () {
+                    updatePrograms();
+                    scheduleRegistrationValidationClear(typeSelect.closest('form'));
+                });
+                programSelect.addEventListener('change', function () {
+                    updateCourses();
+                    scheduleRegistrationValidationClear(programSelect.closest('form'));
+                });
+                courseSelect.addEventListener('change', function () {
+                    scheduleRegistrationValidationClear(courseSelect.closest('form'));
+                });
+                scheduleSelect.addEventListener('change', function () {
+                    scheduleRegistrationValidationClear(scheduleSelect.closest('form'));
+                });
             }
         }
 

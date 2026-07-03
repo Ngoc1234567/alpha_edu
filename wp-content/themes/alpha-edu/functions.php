@@ -541,6 +541,48 @@ function alpha_edu_registration_options() {
     ];
 }
 
+function alpha_edu_flatten_registration_options($items) {
+    $values = [];
+
+    foreach ((array) $items as $item) {
+        if (is_array($item)) {
+            $values = array_merge($values, alpha_edu_flatten_registration_options($item));
+        } elseif ('' !== trim((string) $item)) {
+            $values[] = trim((string) $item);
+        }
+    }
+
+    return array_values(array_unique($values));
+}
+
+function alpha_edu_extend_registration_cf7_select_values($tag, $replace) {
+    if (empty($tag['name']) || ! in_array($tag['name'], ['registration-program', 'registration-course', 'registration-schedule'], true)) {
+        return $tag;
+    }
+
+    $options = alpha_edu_registration_options();
+    $extra_values = [];
+
+    if ('registration-program' === $tag['name']) {
+        $extra_values = alpha_edu_flatten_registration_options($options['programs'] ?? []);
+    } elseif ('registration-course' === $tag['name']) {
+        $extra_values = alpha_edu_flatten_registration_options($options['courses'] ?? []);
+    } elseif ('registration-schedule' === $tag['name']) {
+        $extra_values = alpha_edu_flatten_registration_options($options['schedules'] ?? []);
+    }
+
+    foreach ($extra_values as $value) {
+        if (! in_array($value, (array) ($tag['values'] ?? []), true)) {
+            $tag['raw_values'][] = $value;
+            $tag['values'][] = $value;
+            $tag['labels'][] = $value;
+        }
+    }
+
+    return $tag;
+}
+add_filter('wpcf7_form_tag', 'alpha_edu_extend_registration_cf7_select_values', 10, 2);
+
 function alpha_edu_get_registration_cf7_shortcode($post_id = 0) {
     $shortcode = $post_id ? alpha_edu_get_course_field($post_id, 'course_cf7_shortcode') : '';
 
