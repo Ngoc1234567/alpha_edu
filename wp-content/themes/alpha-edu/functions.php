@@ -1697,12 +1697,8 @@ function alpha_edu_render_documents_admin_page() {
     <?php
 }
 
-function alpha_edu_register_about_fields() {
-    if (! function_exists('acf_add_local_field_group')) {
-        return;
-    }
-
-    acf_add_local_field_group([
+function alpha_edu_get_about_field_group_config() {
+    return [
         'key' => 'group_alpha_about',
         'title' => __('Nội dung trang Giới thiệu', 'alpha-edu'),
         'fields' => [
@@ -1900,6 +1896,27 @@ function alpha_edu_register_about_fields() {
         'label_placement' => 'top',
         'instruction_placement' => 'label',
         'active' => true,
-    ]);
+    ];
 }
-add_action('acf/init', 'alpha_edu_register_about_fields');
+
+function alpha_edu_seed_about_acf_field_group() {
+    if (! function_exists('acf_import_field_group')) {
+        return;
+    }
+
+    $existing_groups = get_posts([
+        'post_type'        => 'acf-field-group',
+        'post_status'      => 'any',
+        'name'             => 'group_alpha_about',
+        'posts_per_page'   => 1,
+        'fields'           => 'ids',
+        'suppress_filters' => true,
+    ]);
+
+    if ($existing_groups) {
+        return;
+    }
+
+    acf_import_field_group(alpha_edu_get_about_field_group_config());
+}
+add_action('acf/init', 'alpha_edu_seed_about_acf_field_group');
