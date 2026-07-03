@@ -846,6 +846,25 @@ function alpha_edu_get_home_field($selector, $default = '') {
     return $value;
 }
 
+function alpha_edu_get_page_field($selector, $post_id = 0, $default = '') {
+    if (! function_exists('get_field')) {
+        return $default;
+    }
+
+    $post_id = $post_id ? absint($post_id) : get_queried_object_id();
+    $value = get_field($selector, $post_id);
+
+    if ('' === $value || null === $value || false === $value) {
+        return $default;
+    }
+
+    if (is_array($value) && isset($value['url'])) {
+        return $value['url'];
+    }
+
+    return $value;
+}
+
 function alpha_edu_get_option_field($selector, $default = '') {
     if (! function_exists('get_field')) {
         return $default;
@@ -1635,3 +1654,210 @@ function alpha_edu_render_documents_admin_page() {
     </div>
     <?php
 }
+
+function alpha_edu_register_about_fields() {
+    if (! function_exists('acf_add_local_field_group')) {
+        return;
+    }
+
+    acf_add_local_field_group([
+        'key' => 'group_alpha_about',
+        'title' => __('Nội dung trang Giới thiệu', 'alpha-edu'),
+        'fields' => [
+            [
+                'key' => 'field_alpha_about_hero_tab',
+                'label' => __('Banner đầu trang', 'alpha-edu'),
+                'name' => '',
+                'type' => 'tab',
+                'placement' => 'top',
+            ],
+            [
+                'key' => 'field_alpha_about_hero_title',
+                'label' => __('Tiêu đề banner', 'alpha-edu'),
+                'name' => 'about_hero_title',
+                'type' => 'text',
+                'default_value' => 'GIỚI THIỆU',
+            ],
+            [
+                'key' => 'field_alpha_about_hero_image',
+                'label' => __('Ảnh banner', 'alpha-edu'),
+                'name' => 'about_hero_image',
+                'type' => 'image',
+                'return_format' => 'url',
+                'preview_size' => 'medium',
+                'library' => 'all',
+            ],
+            [
+                'key' => 'field_alpha_about_intro_tab',
+                'label' => __('Về chúng tôi', 'alpha-edu'),
+                'name' => '',
+                'type' => 'tab',
+                'placement' => 'top',
+            ],
+            [
+                'key' => 'field_alpha_about_intro_eyebrow',
+                'label' => __('Tiêu đề nhỏ', 'alpha-edu'),
+                'name' => 'about_intro_eyebrow',
+                'type' => 'text',
+                'default_value' => 'VỀ CHÚNG TÔI',
+            ],
+            [
+                'key' => 'field_alpha_about_intro_title',
+                'label' => __('Tiêu đề chính', 'alpha-edu'),
+                'name' => 'about_intro_title',
+                'type' => 'text',
+                'default_value' => 'TRUNG TÂM NGOẠI NGỮ - TIN HỌC ALPHA',
+            ],
+            [
+                'key' => 'field_alpha_about_intro_content',
+                'label' => __('Nội dung giới thiệu', 'alpha-edu'),
+                'name' => 'about_intro_content',
+                'type' => 'textarea',
+                'rows' => 8,
+                'new_lines' => '',
+            ],
+            [
+                'key' => 'field_alpha_about_intro_image',
+                'label' => __('Ảnh bên dưới phần giới thiệu', 'alpha-edu'),
+                'name' => 'about_intro_image',
+                'type' => 'image',
+                'return_format' => 'url',
+                'preview_size' => 'medium',
+                'library' => 'all',
+            ],
+            [
+                'key' => 'field_alpha_about_sections_tab',
+                'label' => __('Sứ mệnh / Khẩu hiệu / Thành tựu', 'alpha-edu'),
+                'name' => '',
+                'type' => 'tab',
+                'placement' => 'top',
+            ],
+            [
+                'key' => 'field_alpha_about_mission_title',
+                'label' => __('Tiêu đề Sứ mệnh', 'alpha-edu'),
+                'name' => 'about_mission_title',
+                'type' => 'text',
+                'default_value' => 'SỨ MỆNH',
+            ],
+            [
+                'key' => 'field_alpha_about_mission_content',
+                'label' => __('Nội dung Sứ mệnh', 'alpha-edu'),
+                'name' => 'about_mission_content',
+                'type' => 'textarea',
+                'rows' => 5,
+                'new_lines' => '',
+            ],
+            [
+                'key' => 'field_alpha_about_slogan_title',
+                'label' => __('Tiêu đề Khẩu hiệu', 'alpha-edu'),
+                'name' => 'about_slogan_title',
+                'type' => 'text',
+                'default_value' => 'KHẨU HIỆU',
+            ],
+            [
+                'key' => 'field_alpha_about_slogan_content',
+                'label' => __('Nội dung Khẩu hiệu', 'alpha-edu'),
+                'name' => 'about_slogan_content',
+                'type' => 'textarea',
+                'rows' => 4,
+                'new_lines' => '',
+            ],
+            [
+                'key' => 'field_alpha_about_achievement_title',
+                'label' => __('Tiêu đề Thành tựu', 'alpha-edu'),
+                'name' => 'about_achievement_title',
+                'type' => 'text',
+                'default_value' => 'THÀNH TỰU',
+            ],
+            [
+                'key' => 'field_alpha_about_achievement_content',
+                'label' => __('Nội dung Thành tựu', 'alpha-edu'),
+                'name' => 'about_achievement_content',
+                'type' => 'textarea',
+                'rows' => 4,
+                'new_lines' => '',
+            ],
+            [
+                'key' => 'field_alpha_about_stats_tab',
+                'label' => __('Thông tin nổi bật', 'alpha-edu'),
+                'name' => '',
+                'type' => 'tab',
+                'placement' => 'top',
+            ],
+            [
+                'key' => 'field_alpha_about_stats_title',
+                'label' => __('Tiêu đề thống kê', 'alpha-edu'),
+                'name' => 'about_stats_title',
+                'type' => 'text',
+                'default_value' => 'THÔNG TIN NỔI BẬT',
+            ],
+            [
+                'key' => 'field_alpha_about_stats_background',
+                'label' => __('Ảnh nền thống kê', 'alpha-edu'),
+                'name' => 'about_stats_background',
+                'type' => 'image',
+                'return_format' => 'url',
+                'preview_size' => 'medium',
+                'library' => 'all',
+            ],
+            [
+                'key' => 'field_alpha_about_stat_1_number',
+                'label' => __('Số liệu 1', 'alpha-edu'),
+                'name' => 'about_stat_1_number',
+                'type' => 'text',
+                'default_value' => '5+',
+            ],
+            [
+                'key' => 'field_alpha_about_stat_1_label',
+                'label' => __('Nhãn 1', 'alpha-edu'),
+                'name' => 'about_stat_1_label',
+                'type' => 'text',
+                'default_value' => 'NĂM THÀNH LẬP',
+            ],
+            [
+                'key' => 'field_alpha_about_stat_2_number',
+                'label' => __('Số liệu 2', 'alpha-edu'),
+                'name' => 'about_stat_2_number',
+                'type' => 'text',
+                'default_value' => '2000+',
+            ],
+            [
+                'key' => 'field_alpha_about_stat_2_label',
+                'label' => __('Nhãn 2', 'alpha-edu'),
+                'name' => 'about_stat_2_label',
+                'type' => 'text',
+                'default_value' => 'HỌC VIÊN',
+            ],
+            [
+                'key' => 'field_alpha_about_stat_3_number',
+                'label' => __('Số liệu 3', 'alpha-edu'),
+                'name' => 'about_stat_3_number',
+                'type' => 'text',
+                'default_value' => '300+',
+            ],
+            [
+                'key' => 'field_alpha_about_stat_3_label',
+                'label' => __('Nhãn 3', 'alpha-edu'),
+                'name' => 'about_stat_3_label',
+                'type' => 'text',
+                'default_value' => 'KHÓA HỌC',
+            ],
+        ],
+        'location' => [
+            [
+                [
+                    'param' => 'page_template',
+                    'operator' => '==',
+                    'value' => 'page-templates/template-about.php',
+                ],
+            ],
+        ],
+        'menu_order' => 0,
+        'position' => 'normal',
+        'style' => 'default',
+        'label_placement' => 'top',
+        'instruction_placement' => 'label',
+        'active' => true,
+    ]);
+}
+add_action('acf/init', 'alpha_edu_register_about_fields');

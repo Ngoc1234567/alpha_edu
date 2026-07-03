@@ -8,34 +8,126 @@
 
 get_header();
 ?>
-<main class="about-page section-padding">
-    <div class="container about-layout">
-        <?php while (have_posts()) : the_post(); ?>
-            <?php
-            $about_excerpt = has_excerpt() ? get_the_excerpt() : '';
-            $about_image = get_the_post_thumbnail_url(get_the_ID(), 'large');
-            ?>
-            <section class="about-hero">
-                <div class="about-hero-copy">
-                    <h1><?php the_title(); ?></h1>
+<main class="about-page">
+    <?php while (have_posts()) : the_post(); ?>
+        <?php
+        $post_id = get_the_ID();
 
-                    <?php if ($about_excerpt) : ?>
-                        <p><?php echo esc_html($about_excerpt); ?></p>
+        $hero_title      = alpha_edu_get_page_field('about_hero_title', $post_id, 'GIỚI THIỆU');
+        $hero_image      = alpha_edu_get_page_field('about_hero_image', $post_id, get_the_post_thumbnail_url($post_id, 'full'));
+        $intro_eyebrow   = alpha_edu_get_page_field('about_intro_eyebrow', $post_id, 'VỀ CHÚNG TÔI');
+        $intro_title     = alpha_edu_get_page_field('about_intro_title', $post_id, 'TRUNG TÂM NGOẠI NGỮ - TIN HỌC ALPHA');
+        $intro_content   = alpha_edu_get_page_field('about_intro_content', $post_id, "Trung tâm Ngoại ngữ - Tin học ALPHA được thành lập theo Quyết định số 1814/QĐ-SGDĐT ngày 08/8/2019 của Giám đốc Sở Giáo dục và Đào tạo tỉnh Thừa Thiên Huế. Trải qua quá trình xây dựng và phát triển, Trung tâm đã khẳng định được vai trò quan trọng trong việc tổ chức đào tạo, bồi dưỡng, thi và cấp chứng chỉ tin học cơ bản cũng như ngoại ngữ theo quy định của Bộ Giáo dục và Đào tạo.\n\nHằng năm, Trung tâm mở nhiều khóa đào tạo tin học và ngoại ngữ từ cơ bản đến nâng cao, giúp sinh viên và học viên không chỉ hoàn thiện kiến thức mà còn phát triển toàn diện các kỹ năng. Trung tâm đã tổ chức thi và cấp hàng nghìn chứng chỉ công nghệ thông tin và ngoại ngữ tiếng Anh cho sinh viên các trường đại học, cao đẳng cùng các học viên trong và ngoài tỉnh Thừa Thiên Huế.");
+        $intro_image     = alpha_edu_get_page_field('about_intro_image', $post_id, $hero_image);
+        $mission_title   = alpha_edu_get_page_field('about_mission_title', $post_id, 'SỨ MỆNH');
+        $mission_content = alpha_edu_get_page_field('about_mission_content', $post_id, 'Ra đời với sứ mệnh nâng cao trình độ ngoại ngữ và tin học, ALPHA luôn nỗ lực mang đến một môi trường học tập hiện đại, gần gũi và hiệu quả. Chúng tôi tự hào với đội ngũ giảng viên giàu kinh nghiệm, đầy nhiệt huyết, luôn sẵn sàng đồng hành cùng học viên trên hành trình trau dồi kiến thức.');
+        $slogan_title    = alpha_edu_get_page_field('about_slogan_title', $post_id, 'KHẨU HIỆU');
+        $slogan_content  = alpha_edu_get_page_field('about_slogan_content', $post_id, 'ALPHA - Uy tín dẫn đầu, tri thức vươn xa, nơi mỗi học viên được truyền cảm hứng, đam mê và sự tự tin để bước ra hành trình của mình với những bước chân vững chắc.');
+        $achievement_title   = alpha_edu_get_page_field('about_achievement_title', $post_id, 'THÀNH TỰU');
+        $achievement_content = alpha_edu_get_page_field('about_achievement_content', $post_id, 'Nhờ những nỗ lực không ngừng, năm 2023, Trung tâm Ngoại ngữ - Tin học ALPHA vinh dự được Sở Giáo dục và Đào tạo tỉnh Thừa Thiên Huế trao tặng bằng khen cho những đóng góp xuất sắc trong lĩnh vực đào tạo ngoại ngữ và tin học');
+        $stats_title      = alpha_edu_get_page_field('about_stats_title', $post_id, 'THÔNG TIN NỔI BẬT');
+        $stats_background = alpha_edu_get_page_field('about_stats_background', $post_id, $hero_image);
+        $stats            = [];
+
+        for ($i = 1; $i <= 3; $i++) {
+            $default_numbers = ['5+', '2000+', '300+'];
+            $default_labels  = ['NĂM THÀNH LẬP', 'HỌC VIÊN', 'KHÓA HỌC'];
+            $number = alpha_edu_get_page_field('about_stat_' . $i . '_number', $post_id, $default_numbers[$i - 1]);
+            $label  = alpha_edu_get_page_field('about_stat_' . $i . '_label', $post_id, $default_labels[$i - 1]);
+
+            if ($number || $label) {
+                $stats[] = [
+                    'number' => $number,
+                    'label'  => $label,
+                ];
+            }
+        }
+        ?>
+
+        <section class="about-hero"<?php echo $hero_image ? ' style="background-image: url(' . esc_url($hero_image) . ');"' : ''; ?>>
+            <div class="about-hero-overlay">
+                <h1><?php echo esc_html($hero_title); ?></h1>
+            </div>
+        </section>
+
+        <section class="about-intro section-padding">
+            <div class="container about-layout">
+                <div class="about-intro-copy">
+                    <?php if ($intro_eyebrow) : ?>
+                        <p class="about-eyebrow"><?php echo esc_html($intro_eyebrow); ?></p>
+                    <?php endif; ?>
+
+                    <?php if ($intro_title) : ?>
+                        <h2><?php echo esc_html($intro_title); ?></h2>
+                    <?php endif; ?>
+
+                    <?php if ($intro_content) : ?>
+                        <div class="about-rich-text"><?php echo wp_kses_post(wpautop($intro_content)); ?></div>
                     <?php endif; ?>
                 </div>
 
-                <?php if ($about_image) : ?>
-                    <figure class="about-hero-image">
-                        <img src="<?php echo esc_url($about_image); ?>" alt="<?php echo esc_attr(get_the_title()); ?>">
+                <?php if ($intro_image) : ?>
+                    <figure class="about-wide-image">
+                        <img src="<?php echo esc_url($intro_image); ?>" alt="<?php echo esc_attr($intro_title ?: get_the_title()); ?>">
                     </figure>
                 <?php endif; ?>
-            </section>
+            </div>
+        </section>
 
-            <article <?php post_class('about-content'); ?>>
-                <?php the_content(); ?>
-            </article>
-        <?php endwhile; ?>
-    </div>
+        <section class="about-values">
+            <div class="container about-layout">
+                <div class="about-value about-value-right">
+                    <h2><?php echo esc_html($mission_title); ?></h2>
+                    <div class="about-rich-text"><?php echo wp_kses_post(wpautop($mission_content)); ?></div>
+                </div>
+
+                <div class="about-value about-value-left">
+                    <h2><?php echo esc_html($slogan_title); ?></h2>
+                    <div class="about-rich-text"><?php echo wp_kses_post(wpautop($slogan_content)); ?></div>
+                </div>
+
+                <div class="about-value about-value-right">
+                    <h2><?php echo esc_html($achievement_title); ?></h2>
+                    <div class="about-rich-text"><?php echo wp_kses_post(wpautop($achievement_content)); ?></div>
+                </div>
+            </div>
+        </section>
+
+        <?php if ($stats_title || $stats) : ?>
+            <section class="about-stats"<?php echo $stats_background ? ' style="background-image: url(' . esc_url($stats_background) . ');"' : ''; ?>>
+                <div class="about-stats-overlay">
+                    <div class="container about-layout">
+                        <?php if ($stats_title) : ?>
+                            <h2><?php echo esc_html($stats_title); ?></h2>
+                        <?php endif; ?>
+
+                        <?php if ($stats) : ?>
+                            <div class="about-stats-grid">
+                                <?php foreach ($stats as $stat) : ?>
+                                    <div class="about-stat-card">
+                                        <?php if ($stat['number']) : ?>
+                                            <?php
+                                            $stat_number = trim((string) $stat['number']);
+                                            preg_match('/^([^0-9]*)([0-9][0-9,.]*)(.*)$/', $stat_number, $stat_matches);
+                                            $stat_prefix = $stat_matches[1] ?? '';
+                                            $stat_value  = isset($stat_matches[2]) ? (int) str_replace([',', '.'], '', $stat_matches[2]) : 0;
+                                            $stat_suffix = $stat_matches[3] ?? '';
+                                            ?>
+                                            <strong class="stat-count" data-count="<?php echo esc_attr($stat_value); ?>" data-prefix="<?php echo esc_attr($stat_prefix); ?>" data-suffix="<?php echo esc_attr($stat_suffix); ?>"><?php echo esc_html($stat_number); ?></strong>
+                                        <?php endif; ?>
+
+                                        <?php if ($stat['label']) : ?>
+                                            <span><?php echo esc_html($stat['label']); ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </section>
+        <?php endif; ?>
+    <?php endwhile; ?>
 </main>
 <?php
 get_footer();

@@ -1,6 +1,7 @@
 (function () {
     document.addEventListener('DOMContentLoaded', function () {
         document.body.classList.add('registration-js-ready');
+        document.body.classList.add('about-animation-ready');
 
         var menuToggle = document.querySelector('.mobile-menu-toggle');
         var mainNav = document.querySelector('.main-nav');
@@ -123,6 +124,29 @@
                 updatePrograms();
                 typeSelect.addEventListener('change', updatePrograms);
                 programSelect.addEventListener('change', updateCourses);
+            }
+        }
+
+        var aboutHeadings = document.querySelectorAll('.about-intro h2, .about-value h2, .about-stats h2');
+
+        if (aboutHeadings.length) {
+            if ('IntersectionObserver' in window) {
+                var aboutHeadingObserver = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                            aboutHeadingObserver.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.45, rootMargin: '0px 0px -8% 0px' });
+
+                aboutHeadings.forEach(function (heading) {
+                    aboutHeadingObserver.observe(heading);
+                });
+            } else {
+                aboutHeadings.forEach(function (heading) {
+                    heading.classList.add('is-visible');
+                });
             }
         }
 
