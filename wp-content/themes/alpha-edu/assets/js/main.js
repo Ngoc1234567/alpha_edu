@@ -20,7 +20,7 @@
                 spaceBetween: 24,
                 speed: 700,
                 autoplay: {
-                    delay: 4500,
+                    delay: 2500,
                     disableOnInteraction: false,
                     pauseOnMouseEnter: true
                 },

@@ -1387,9 +1387,10 @@ function alpha_edu_handle_exam_results_save_rows() {
     $rows = isset($_POST['alpha_exam_rows']) && is_array($_POST['alpha_exam_rows'])
         ? wp_unslash($_POST['alpha_exam_rows'])
         : [];
-    $clean_rows = [];
+    $data = alpha_edu_get_exam_results_data();
+    $clean_rows = $data['rows'];
 
-    foreach ($rows as $row) {
+    foreach ($rows as $index => $row) {
         if (! is_array($row)) {
             continue;
         }
@@ -1406,14 +1407,14 @@ function alpha_edu_handle_exam_results_save_rows() {
         ];
 
         if ('' === $item['year'] || '' === $item['course'] || '' === $item['cccd']) {
+            unset($clean_rows[$index]);
             continue;
         }
 
-        $clean_rows[] = $item;
+        $clean_rows[$index] = $item;
     }
 
-    $data = alpha_edu_get_exam_results_data();
-    $data['rows'] = $clean_rows;
+    $data['rows'] = array_values($clean_rows);
     $data['imported_at'] = current_time('mysql');
 
     update_option('alpha_edu_exam_results_data', $data, false);
@@ -1426,7 +1427,34 @@ add_action('admin_post_alpha_edu_save_exam_results_rows', 'alpha_edu_handle_exam
 function alpha_edu_render_exam_results_admin_page() {
     $data = alpha_edu_get_exam_results_data();
     $status = isset($_GET['alpha_exam_status']) ? sanitize_key(wp_unslash($_GET['alpha_exam_status'])) : '';
+    $search = isset($_GET['alpha_exam_search']) ? alpha_edu_clean_exam_cell(wp_unslash($_GET['alpha_exam_search'])) : '';
+    $current_page = max(1, isset($_GET['exam_paged']) ? absint(wp_unslash($_GET['exam_paged'])) : 1);
+    $per_page = 15;
     $error = get_transient('alpha_edu_exam_results_error');
+    $filtered_rows = [];
+
+    foreach ($data['rows'] as $index => $row) {
+        $haystack = implode(' ', [
+            $row['year'] ?? '',
+            $row['course'] ?? '',
+            $row['cccd'] ?? '',
+            $row['sbd'] ?? '',
+            $row['theory'] ?? '',
+            $row['practice'] ?? '',
+            $row['result'] ?? '',
+            $row['note'] ?? '',
+        ]);
+
+        if ('' === $search || false !== stripos(remove_accents($haystack), remove_accents($search))) {
+            $filtered_rows[$index] = $row;
+        }
+    }
+
+    $total_rows = count($data['rows']);
+    $filtered_total = count($filtered_rows);
+    $total_pages = max(1, (int) ceil($filtered_total / $per_page));
+    $current_page = min($current_page, $total_pages);
+    $paged_rows = array_slice($filtered_rows, ($current_page - 1) * $per_page, $per_page, true);
 
     if ($error) {
         delete_transient('alpha_edu_exam_results_error');
@@ -1466,10 +1494,48 @@ function alpha_edu_render_exam_results_admin_page() {
                 <?php echo esc_html($data['imported_at']); ?>
             <?php endif; ?>
             <br><strong><?php esc_html_e('Số dòng:', 'alpha-edu'); ?></strong>
-            <?php echo esc_html(number_format_i18n(count($data['rows']))); ?>
+            <?php echo esc_html(number_format_i18n($total_rows)); ?>
         </p>
 
         <?php if (! empty($data['rows'])) : ?>
+            <form method="get" action="<?php echo esc_url(admin_url('admin.php')); ?>" style="display:flex;gap:8px;align-items:center;margin:16px 0;">
+                <input type="hidden" name="page" value="alpha-edu-exam-results">
+                <label for="alpha-exam-search" class="screen-reader-text"><?php esc_html_e('Tìm kiếm kết quả thi', 'alpha-edu'); ?></label>
+                <input id="alpha-exam-search" type="search" name="alpha_exam_search" value="<?php echo esc_attr($search); ?>" placeholder="<?php echo esc_attr__('Tìm theo năm, khóa thi, CCCD, SBD, kết quả...', 'alpha-edu'); ?>" style="min-width:360px;">
+                <?php submit_button(__('Tìm kiếm', 'alpha-edu'), 'secondary', '', false); ?>
+                <?php if ('' !== $search) : ?>
+                    <a class="button" href="<?php echo esc_url(admin_url('admin.php?page=alpha-edu-exam-results')); ?>"><?php esc_html_e('Xóa tìm kiếm', 'alpha-edu'); ?></a>
+                <?php endif; ?>
+            </form>
+
+            <p>
+                <?php
+                printf(
+                    esc_html__('Hiển thị %1$s/%2$s dòng, %3$s dòng mỗi trang.', 'alpha-edu'),
+                    esc_html(number_format_i18n($filtered_total)),
+                    esc_html(number_format_i18n($total_rows)),
+                    esc_html(number_format_i18n($per_page))
+                );
+                ?>
+            </p>
+
+            <?php if ($total_pages > 1) : ?>
+                <div class="tablenav top">
+                    <div class="tablenav-pages">
+                        <?php
+                        echo wp_kses_post(paginate_links([
+                            'base'      => add_query_arg('exam_paged', '%#%'),
+                            'format'    => '',
+                            'current'   => $current_page,
+                            'total'     => $total_pages,
+                            'prev_text' => __('‹ Trước', 'alpha-edu'),
+                            'next_text' => __('Sau ›', 'alpha-edu'),
+                        ]));
+                        ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <?php wp_nonce_field('alpha_edu_exam_results_save_rows'); ?>
                 <input type="hidden" name="action" value="alpha_edu_save_exam_results_rows">
@@ -1489,7 +1555,7 @@ function alpha_edu_render_exam_results_admin_page() {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($data['rows'] as $index => $row) : ?>
+                            <?php foreach ($paged_rows as $index => $row) : ?>
                                 <tr>
                                     <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][year]" value="<?php echo esc_attr($row['year']); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][course]" value="<?php echo esc_attr($row['course']); ?>" style="width:100%;"></td>
@@ -1505,9 +1571,30 @@ function alpha_edu_render_exam_results_admin_page() {
                     </table>
                 </div>
 
+                <?php if (! $paged_rows) : ?>
+                    <p><?php esc_html_e('Không tìm thấy dòng kết quả thi phù hợp.', 'alpha-edu'); ?></p>
+                <?php endif; ?>
+
                 <?php submit_button(__('Lưu chỉnh sửa kết quả thi', 'alpha-edu')); ?>
                 <p class="description"><?php esc_html_e('Dòng thiếu Năm, Khóa thi hoặc CCCD sẽ không được lưu.', 'alpha-edu'); ?></p>
             </form>
+
+            <?php if ($total_pages > 1) : ?>
+                <div class="tablenav bottom">
+                    <div class="tablenav-pages">
+                        <?php
+                        echo wp_kses_post(paginate_links([
+                            'base'      => add_query_arg('exam_paged', '%#%'),
+                            'format'    => '',
+                            'current'   => $current_page,
+                            'total'     => $total_pages,
+                            'prev_text' => __('‹ Trước', 'alpha-edu'),
+                            'next_text' => __('Sau ›', 'alpha-edu'),
+                        ]));
+                        ?>
+                    </div>
+                </div>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
     <?php
