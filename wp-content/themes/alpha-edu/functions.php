@@ -799,7 +799,7 @@ function alpha_edu_ensure_registration_cf7_form() {
 }
 add_action('admin_init', 'alpha_edu_ensure_registration_cf7_form');
 
-function alpha_edu_render_registration_form($source_course_id = 0, $is_open = false) {
+function alpha_edu_render_registration_form($source_course_id = 0, $is_open = false, $show_arrow = true) {
     $shortcode = alpha_edu_get_registration_cf7_shortcode($source_course_id);
     $section_classes = 'alpha-registration-section';
 
@@ -808,7 +808,9 @@ function alpha_edu_render_registration_form($source_course_id = 0, $is_open = fa
     }
     ?>
     <section id="course-registration-form" class="<?php echo esc_attr($section_classes); ?>" aria-labelledby="alpha-registration-title">
+        <?php if ($show_arrow) : ?>
         <div class="alpha-registration-arrow" aria-hidden="true"></div>
+        <?php endif; ?>
 
         <div class="alpha-registration-form alpha-registration-form-cf7">
             <header class="alpha-registration-header">
