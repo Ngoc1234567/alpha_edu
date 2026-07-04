@@ -219,6 +219,25 @@ function alpha_edu_get_notice_image_ids($post_id) {
     return array_values(array_filter(array_map('absint', $image_ids)));
 }
 
+function alpha_edu_get_notice_images($post_id, $size = 'medium_large') {
+    $images = [];
+
+    foreach (alpha_edu_get_notice_image_ids($post_id) as $image_id) {
+        $image = wp_get_attachment_image_src($image_id, $size);
+
+        if (! $image) {
+            continue;
+        }
+
+        $images[] = [
+            'url' => $image[0],
+            'alt' => get_post_meta($image_id, '_wp_attachment_image_alt', true),
+        ];
+    }
+
+    return $images;
+}
+
 function alpha_edu_render_notice_images_meta_box($post) {
     $image_ids = alpha_edu_get_notice_image_ids($post->ID);
 

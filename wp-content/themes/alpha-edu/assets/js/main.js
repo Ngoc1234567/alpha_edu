@@ -226,6 +226,33 @@
             }
         }
 
+        var aboutRevealItems = document.querySelectorAll('.about-eyebrow, .about-rich-text p, .about-wide-image, .about-stat-card');
+
+        if (aboutRevealItems.length) {
+            aboutRevealItems.forEach(function (item, index) {
+                item.style.setProperty('--about-reveal-delay', Math.min(index % 4, 3) * 90 + 'ms');
+            });
+
+            if ('IntersectionObserver' in window) {
+                var aboutRevealObserver = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                            aboutRevealObserver.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.18, rootMargin: '0px 0px -6% 0px' });
+
+                aboutRevealItems.forEach(function (item) {
+                    aboutRevealObserver.observe(item);
+                });
+            } else {
+                aboutRevealItems.forEach(function (item) {
+                    item.classList.add('is-visible');
+                });
+            }
+        }
+
         var statCounts = document.querySelectorAll('.stat-count[data-count]');
 
         function formatCount(value, prefix, suffix) {

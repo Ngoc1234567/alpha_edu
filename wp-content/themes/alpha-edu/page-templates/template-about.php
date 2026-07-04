@@ -28,6 +28,16 @@ get_header();
         $stats_title      = alpha_edu_get_page_field('about_stats_title', $post_id, 'THÔNG TIN NỔI BẬT');
         $stats_background = alpha_edu_get_page_field('about_stats_background', $post_id, $hero_image);
         $stats            = [];
+        $intro_title_html = esc_html($intro_title);
+
+        foreach (['NGOẠI NGỮ - TIN HỌC ALPHA', 'NGOẠI NGỮ - TIN HỌC'] as $intro_title_phrase) {
+            $escaped_phrase = esc_html($intro_title_phrase);
+
+            if (false !== strpos($intro_title_html, $escaped_phrase)) {
+                $intro_title_html = str_replace($escaped_phrase, '<span class="about-title-nowrap">' . $escaped_phrase . '</span>', $intro_title_html);
+                break;
+            }
+        }
 
         for ($i = 1; $i <= 3; $i++) {
             $default_numbers = ['5+', '2000+', '300+'];
@@ -58,7 +68,7 @@ get_header();
                     <?php endif; ?>
 
                     <?php if ($intro_title) : ?>
-                        <h2><?php echo esc_html($intro_title); ?></h2>
+                        <h2><?php echo wp_kses($intro_title_html, ['span' => ['class' => true]]); ?></h2>
                     <?php endif; ?>
 
                     <?php if ($intro_content) : ?>

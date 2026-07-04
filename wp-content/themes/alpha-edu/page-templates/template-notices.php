@@ -8,28 +8,6 @@
 
 get_header();
 
-if (! function_exists('alpha_edu_get_notice_images')) {
-    function alpha_edu_get_notice_images($post_id) {
-        $image_ids = function_exists('alpha_edu_get_notice_image_ids') ? alpha_edu_get_notice_image_ids($post_id) : [];
-        $images = [];
-
-        foreach ($image_ids as $image_id) {
-            $image = wp_get_attachment_image_src($image_id, 'medium_large');
-
-            if (! $image) {
-                continue;
-            }
-
-            $images[] = [
-                'url' => $image[0],
-                'alt' => get_post_meta($image_id, '_wp_attachment_image_alt', true),
-            ];
-        }
-
-        return $images;
-    }
-}
-
 $notice_query = new WP_Query([
     'post_type'      => 'alpha_notice',
     'post_status'    => 'publish',
@@ -49,17 +27,19 @@ $notice_query = new WP_Query([
                 <?php
                 while ($notice_query->have_posts()) :
                     $notice_query->the_post();
-                    $notice_content = get_the_content();
                     $notice_images = alpha_edu_get_notice_images(get_the_ID());
-                    $notice_body = apply_filters('the_content', $notice_content);
+                    $notice_excerpt = has_excerpt()
+                        ? get_the_excerpt()
+                        : wp_trim_words(wp_strip_all_tags(get_the_content()), 38, '...');
 
-                    if ('' === trim(wp_strip_all_tags($notice_body)) && has_excerpt()) {
-                        $notice_body = wpautop(get_the_excerpt());
-                    }
+                    $notice_body = $notice_excerpt ? wpautop($notice_excerpt) : '';
                     ?>
                     <article <?php post_class('notice-item'); ?>>
                         <div class="notice-copy">
-                            <h2><span class="notice-mark" aria-hidden="true"></span><?php the_title(); ?></h2>
+                            <h2>
+                                <span class="notice-mark" aria-hidden="true"></span>
+                                <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+                            </h2>
                             <time datetime="<?php echo esc_attr(get_the_date('c')); ?>">[<?php echo esc_html(get_the_date('d/m/Y')); ?>]</time>
                             <div class="notice-content">
                                 <?php echo wp_kses_post($notice_body); ?>

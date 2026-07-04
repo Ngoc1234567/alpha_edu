@@ -14,6 +14,22 @@ $intro_eyebrow = alpha_edu_get_home_field('home_intro_eyebrow');
 $intro_title   = alpha_edu_get_home_field('home_intro_title');
 $intro_content = alpha_edu_get_home_field('home_intro_content');
 $intro_image   = alpha_edu_get_home_field('home_intro_image');
+$nowrap_title_phrase = function ($title) {
+    $title_html = esc_html($title);
+
+    foreach (['NGOẠI NGỮ - TIN HỌC ALPHA', 'NGOẠI NGỮ - TIN HỌC'] as $phrase) {
+        $escaped_phrase = esc_html($phrase);
+
+        if (false !== strpos($title_html, $escaped_phrase)) {
+            $title_html = str_replace($escaped_phrase, '<span class="title-nowrap">' . $escaped_phrase . '</span>', $title_html);
+            break;
+        }
+    }
+
+    return $title_html;
+};
+$hero_title_html  = $nowrap_title_phrase($hero_title);
+$intro_title_html = $nowrap_title_phrase($intro_title);
 
 $courses_title = alpha_edu_get_home_field('home_courses_title');
 $course_query  = new WP_Query([
@@ -59,7 +75,7 @@ get_header();
         <?php if ($hero_title || $hero_subtitle) : ?>
         <div class="container hero-heading">
             <?php if ($hero_title) : ?>
-            <h1><?php echo esc_html($hero_title); ?></h1>
+            <h1><?php echo wp_kses($hero_title_html, ['span' => ['class' => true]]); ?></h1>
             <?php endif; ?>
 
             <?php if ($hero_subtitle) : ?>
@@ -78,26 +94,32 @@ get_header();
 
     <?php if ($intro_title || $intro_content || $intro_image) : ?>
     <section class="home-intro section-padding">
-        <div class="container intro-grid">
-            <?php if ($intro_eyebrow || $intro_title || $intro_content) : ?>
-            <div class="intro-content">
+        <div class="container">
+            <?php if ($intro_eyebrow || $intro_title) : ?>
+            <div class="intro-heading">
                 <?php if ($intro_eyebrow) : ?>
                 <p class="intro-eyebrow"><?php echo esc_html($intro_eyebrow); ?></p>
                 <?php endif; ?>
 
                 <?php if ($intro_title) : ?>
-                <h2><?php echo esc_html($intro_title); ?></h2>
-                <?php endif; ?>
-
-                <?php if ($intro_content) : ?>
-                <div class="intro-rich-text"><?php echo wp_kses_post(wpautop($intro_content)); ?></div>
+                <h2><?php echo wp_kses($intro_title_html, ['span' => ['class' => true]]); ?></h2>
                 <?php endif; ?>
             </div>
             <?php endif; ?>
 
-            <?php if ($intro_image) : ?>
-            <div class="intro-image">
-                <img src="<?php echo esc_url($intro_image); ?>" alt="<?php echo esc_attr($intro_title); ?>">
+            <?php if ($intro_content || $intro_image) : ?>
+            <div class="intro-grid">
+                <?php if ($intro_content) : ?>
+                <div class="intro-content">
+                    <div class="intro-rich-text"><?php echo wp_kses_post(wpautop($intro_content)); ?></div>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($intro_image) : ?>
+                <div class="intro-image">
+                    <img src="<?php echo esc_url($intro_image); ?>" alt="<?php echo esc_attr($intro_title); ?>">
+                </div>
+                <?php endif; ?>
             </div>
             <?php endif; ?>
         </div>
