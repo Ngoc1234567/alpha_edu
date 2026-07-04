@@ -28,6 +28,18 @@ get_header();
         $stats_title      = alpha_edu_get_page_field('about_stats_title', $post_id, 'THÔNG TIN NỔI BẬT');
         $stats_background = alpha_edu_get_page_field('about_stats_background', $post_id, $hero_image);
         $stats            = [];
+        $testimonials_title = alpha_edu_get_home_field('home_testimonials_title');
+        $testimonial_query  = new WP_Query([
+            'post_type'      => 'testimonial',
+            'posts_per_page' => 8,
+            'meta_query'     => [
+                [
+                    'key'     => '_thumbnail_id',
+                    'compare' => 'EXISTS',
+                ],
+            ],
+            'orderby'        => ['menu_order' => 'ASC', 'date' => 'DESC'],
+        ]);
         $intro_title_html = esc_html($intro_title);
 
         foreach (['NGOẠI NGỮ - TIN HỌC ALPHA', 'NGOẠI NGỮ - TIN HỌC'] as $intro_title_phrase) {
@@ -133,6 +145,38 @@ get_header();
                                 <?php endforeach; ?>
                             </div>
                         <?php endif; ?>
+                    </div>
+                </div>
+            </section>
+        <?php endif; ?>
+
+        <?php if ($testimonial_query->have_posts()) : ?>
+            <section class="home-testimonials about-testimonials section-padding">
+                <div class="container">
+                    <?php if ($testimonials_title) : ?>
+                        <h2 class="section-title section-title-center section-title-red"><?php echo esc_html($testimonials_title); ?></h2>
+                    <?php endif; ?>
+
+                    <div class="testimonial-slider-wrap">
+                        <div class="swiper testimonial-swiper">
+                            <div class="swiper-wrapper">
+                                <?php
+                                while ($testimonial_query->have_posts()) :
+                                    $testimonial_query->the_post();
+                                    ?>
+                                    <div class="swiper-slide">
+                                        <figure class="testimonial-card">
+                                            <?php the_post_thumbnail('large', ['class' => 'testimonial-image', 'alt' => get_the_title()]); ?>
+                                        </figure>
+                                    </div>
+                                    <?php
+                                endwhile;
+                                wp_reset_postdata();
+                                ?>
+                            </div>
+
+                            <div class="swiper-pagination"></div>
+                        </div>
                     </div>
                 </div>
             </section>
