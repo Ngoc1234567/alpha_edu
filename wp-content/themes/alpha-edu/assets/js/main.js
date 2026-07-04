@@ -69,6 +69,14 @@
             }
         }
 
+        document.querySelectorAll('.alpha-registration-form-cf7 input[type="submit"], .alpha-registration-form-cf7 .wpcf7-submit').forEach(function (button) {
+            var row = button.closest('p');
+
+            if (row) {
+                row.classList.add('alpha-registration-submit-row');
+            }
+        });
+
         var registrationData = window.alphaEduRegistration || null;
 
         if (registrationData) {

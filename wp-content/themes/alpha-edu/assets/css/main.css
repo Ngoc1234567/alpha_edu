@@ -1939,8 +1939,29 @@ a {
     grid-column: 1 / -1;
 }
 
-.alpha-registration-form-cf7 .wpcf7-form > p:has(input[type="submit"]) {
+.alpha-registration-form-cf7 .wpcf7-form > p:has(input[type="submit"]),
+.alpha-registration-form-cf7 .alpha-registration-submit-row {
     display: grid;
+    position: relative;
+}
+
+.alpha-registration-form-cf7 .wpcf7-form > p:has(input[type="submit"])::before,
+.alpha-registration-form-cf7 .alpha-registration-submit-row::before {
+    content: "ĐĂNG KÝ NGAY";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    z-index: 1;
+    width: max-content;
+    max-width: calc(100% - 36px);
+    height: 54px;
+    color: #fff;
+    font-size: clamp(22px, 4vw, 30px);
+    line-height: 54px;
+    font-weight: 900;
+    text-align: center;
+    pointer-events: none;
+    transform: translateX(-50%);
 }
 
 .alpha-registration-form-cf7 label {
@@ -2005,7 +2026,7 @@ a {
     -webkit-appearance: none;
     appearance: none;
     background: var(--alpha-red);
-    color: #fff;
+    color: transparent;
     font-family: var(--alpha-font);
     font-size: clamp(22px, 4vw, 30px);
     line-height: 54px;
