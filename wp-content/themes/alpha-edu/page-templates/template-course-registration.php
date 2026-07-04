@@ -14,6 +14,12 @@ get_header();
             <article <?php post_class('entry-content'); ?>>
                 <h1><?php the_title(); ?></h1>
                 <?php the_content(); ?>
+
+                <?php
+                if (function_exists('alpha_edu_render_registration_form')) {
+                    alpha_edu_render_registration_form(0, true);
+                }
+                ?>
             </article>
         <?php endwhile; ?>
     </div>
