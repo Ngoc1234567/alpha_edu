@@ -13,7 +13,6 @@ $hero_banner   = alpha_edu_get_home_field('home_hero_banner');
 $intro_eyebrow = alpha_edu_get_home_field('home_intro_eyebrow');
 $intro_title   = alpha_edu_get_home_field('home_intro_title');
 $intro_content = alpha_edu_get_home_field('home_intro_content');
-$intro_image   = alpha_edu_get_home_field('home_intro_image');
 $nowrap_title_phrase = function ($title) {
     $title_html = esc_html($title);
 
@@ -92,7 +91,7 @@ get_header();
     </section>
     <?php endif; ?>
 
-    <?php if ($intro_title || $intro_content || $intro_image) : ?>
+    <?php if ($intro_title || $intro_content) : ?>
     <section class="home-intro section-padding">
         <div class="container">
             <?php if ($intro_eyebrow || $intro_title) : ?>
@@ -107,19 +106,11 @@ get_header();
             </div>
             <?php endif; ?>
 
-            <?php if ($intro_content || $intro_image) : ?>
+            <?php if ($intro_content) : ?>
             <div class="intro-grid">
-                <?php if ($intro_content) : ?>
                 <div class="intro-content">
                     <div class="intro-rich-text"><?php echo wp_kses_post(wpautop($intro_content)); ?></div>
                 </div>
-                <?php endif; ?>
-
-                <?php if ($intro_image) : ?>
-                <div class="intro-image">
-                    <img src="<?php echo esc_url($intro_image); ?>" alt="<?php echo esc_attr($intro_title); ?>">
-                </div>
-                <?php endif; ?>
             </div>
             <?php endif; ?>
         </div>

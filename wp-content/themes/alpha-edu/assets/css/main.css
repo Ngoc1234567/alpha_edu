@@ -192,14 +192,15 @@ a {
 }
 
 .intro-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 470px;
-    gap: 40px 64px;
-    align-items: start;
+    display: block;
 }
 
 .intro-heading {
     margin-bottom: 24px;
+}
+
+.intro-content {
+    max-width: none;
 }
 
 .intro-heading h2,
@@ -257,12 +258,6 @@ a {
 .contact-extra p {
     text-align: justify;
     text-align-last: left;
-}
-
-.intro-image img {
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
 }
 
 .home-courses {
@@ -2046,11 +2041,6 @@ a {
 }
 
 @media (max-width: 1024px) {
-    .intro-grid {
-        grid-template-columns: minmax(0, 1fr) 380px;
-        gap: 40px;
-    }
-
     .course-grid {
         gap: 32px;
     }
@@ -2122,11 +2112,6 @@ a {
 
     .hero-heading {
         padding: 38px 0 22px;
-    }
-
-    .intro-grid {
-        grid-template-columns: 1fr;
-        gap: 26px;
     }
 
     .about-layout {
