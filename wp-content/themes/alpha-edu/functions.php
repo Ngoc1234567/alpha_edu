@@ -1455,12 +1455,108 @@ function alpha_edu_render_exam_results_admin_page() {
     $total_pages = max(1, (int) ceil($filtered_total / $per_page));
     $current_page = min($current_page, $total_pages);
     $paged_rows = array_slice($filtered_rows, ($current_page - 1) * $per_page, $per_page, true);
+    $pagination_args = ['page' => 'alpha-edu-exam-results'];
+
+    if ('' !== $search) {
+        $pagination_args['alpha_exam_search'] = $search;
+    }
+
+    $pagination_base = add_query_arg($pagination_args, admin_url('admin.php'));
+    $pagination_links = $total_pages > 1
+        ? paginate_links([
+            'base'      => add_query_arg('exam_paged', '%#%', $pagination_base),
+            'format'    => '',
+            'current'   => $current_page,
+            'total'     => $total_pages,
+            'prev_text' => __('‹ Trước', 'alpha-edu'),
+            'next_text' => __('Sau ›', 'alpha-edu'),
+        ])
+        : '';
 
     if ($error) {
         delete_transient('alpha_edu_exam_results_error');
     }
     ?>
     <div class="wrap">
+        <style>
+            .alpha-exam-panel {
+                max-width: 100%;
+                margin: 18px 0;
+                padding: 18px;
+                border: 1px solid #dcdcde;
+                border-radius: 8px;
+                background: #fff;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            }
+
+            .alpha-exam-toolbar {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                align-items: center;
+                justify-content: space-between;
+                margin: 18px 0 12px;
+                padding: 14px;
+                border: 1px solid #dbe7fb;
+                border-radius: 8px;
+                background: #f6f9ff;
+            }
+
+            .alpha-exam-search {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                align-items: center;
+                margin: 0;
+            }
+
+            .alpha-exam-search input[type="search"] {
+                width: min(460px, 72vw);
+                min-height: 36px;
+            }
+
+            .alpha-exam-count {
+                margin: 0;
+                color: #1d2327;
+                font-weight: 600;
+            }
+
+            .alpha-exam-pagination {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                align-items: center;
+                justify-content: flex-end;
+                margin: 12px 0;
+            }
+
+            .alpha-exam-pagination .page-numbers {
+                display: inline-flex;
+                min-width: 34px;
+                min-height: 34px;
+                align-items: center;
+                justify-content: center;
+                padding: 0 10px;
+                border: 1px solid #c3c4c7;
+                border-radius: 6px;
+                background: #fff;
+                color: #1d2327;
+                text-decoration: none;
+                font-weight: 600;
+            }
+
+            .alpha-exam-pagination .page-numbers.current {
+                border-color: #2271b1;
+                background: #2271b1;
+                color: #fff;
+            }
+
+            .alpha-exam-pagination a.page-numbers:hover,
+            .alpha-exam-pagination a.page-numbers:focus {
+                border-color: #2271b1;
+                color: #135e96;
+            }
+        </style>
         <h1><?php esc_html_e('Quản lý kết quả thi', 'alpha-edu'); ?></h1>
 
         <?php if ('success' === $status) : ?>
@@ -1498,49 +1594,40 @@ function alpha_edu_render_exam_results_admin_page() {
         </p>
 
         <?php if (! empty($data['rows'])) : ?>
-            <form method="get" action="<?php echo esc_url(admin_url('admin.php')); ?>" style="display:flex;gap:8px;align-items:center;margin:16px 0;">
-                <input type="hidden" name="page" value="alpha-edu-exam-results">
-                <label for="alpha-exam-search" class="screen-reader-text"><?php esc_html_e('Tìm kiếm kết quả thi', 'alpha-edu'); ?></label>
-                <input id="alpha-exam-search" type="search" name="alpha_exam_search" value="<?php echo esc_attr($search); ?>" placeholder="<?php echo esc_attr__('Tìm theo năm, khóa thi, CCCD, SBD, kết quả...', 'alpha-edu'); ?>" style="min-width:360px;">
-                <?php submit_button(__('Tìm kiếm', 'alpha-edu'), 'secondary', '', false); ?>
-                <?php if ('' !== $search) : ?>
-                    <a class="button" href="<?php echo esc_url(admin_url('admin.php?page=alpha-edu-exam-results')); ?>"><?php esc_html_e('Xóa tìm kiếm', 'alpha-edu'); ?></a>
-                <?php endif; ?>
-            </form>
+            <div class="alpha-exam-toolbar">
+                <form class="alpha-exam-search" method="get" action="<?php echo esc_url(admin_url('admin.php')); ?>">
+                    <input type="hidden" name="page" value="alpha-edu-exam-results">
+                    <label for="alpha-exam-search" class="screen-reader-text"><?php esc_html_e('Tìm kiếm kết quả thi', 'alpha-edu'); ?></label>
+                    <input id="alpha-exam-search" type="search" name="alpha_exam_search" value="<?php echo esc_attr($search); ?>" placeholder="<?php echo esc_attr__('Tìm theo năm, khóa thi, CCCD, SBD, kết quả...', 'alpha-edu'); ?>">
+                    <?php submit_button(__('Tìm kiếm', 'alpha-edu'), 'secondary', '', false); ?>
+                    <?php if ('' !== $search) : ?>
+                        <a class="button" href="<?php echo esc_url(admin_url('admin.php?page=alpha-edu-exam-results')); ?>"><?php esc_html_e('Xóa tìm kiếm', 'alpha-edu'); ?></a>
+                    <?php endif; ?>
+                </form>
 
-            <p>
-                <?php
-                printf(
-                    esc_html__('Hiển thị %1$s/%2$s dòng, %3$s dòng mỗi trang.', 'alpha-edu'),
-                    esc_html(number_format_i18n($filtered_total)),
-                    esc_html(number_format_i18n($total_rows)),
-                    esc_html(number_format_i18n($per_page))
-                );
-                ?>
-            </p>
+                <p class="alpha-exam-count">
+                    <?php
+                    printf(
+                        esc_html__('Hiển thị %1$s/%2$s dòng · %3$s dòng/trang', 'alpha-edu'),
+                        esc_html(number_format_i18n($filtered_total)),
+                        esc_html(number_format_i18n($total_rows)),
+                        esc_html(number_format_i18n($per_page))
+                    );
+                    ?>
+                </p>
+            </div>
 
-            <?php if ($total_pages > 1) : ?>
-                <div class="tablenav top">
-                    <div class="tablenav-pages">
-                        <?php
-                        echo wp_kses_post(paginate_links([
-                            'base'      => add_query_arg('exam_paged', '%#%'),
-                            'format'    => '',
-                            'current'   => $current_page,
-                            'total'     => $total_pages,
-                            'prev_text' => __('‹ Trước', 'alpha-edu'),
-                            'next_text' => __('Sau ›', 'alpha-edu'),
-                        ]));
-                        ?>
-                    </div>
-                </div>
+            <?php if ($pagination_links) : ?>
+                <nav class="alpha-exam-pagination" aria-label="<?php echo esc_attr__('Phân trang kết quả thi', 'alpha-edu'); ?>">
+                    <?php echo wp_kses_post($pagination_links); ?>
+                </nav>
             <?php endif; ?>
 
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <?php wp_nonce_field('alpha_edu_exam_results_save_rows'); ?>
                 <input type="hidden" name="action" value="alpha_edu_save_exam_results_rows">
 
-                <div style="max-width:100%;overflow:auto;border:1px solid #dcdcde;background:#fff;">
+                <div class="alpha-exam-panel" style="overflow:auto;">
                     <table class="widefat striped" style="min-width:1320px;border:0;">
                         <thead>
                             <tr>
@@ -1579,21 +1666,10 @@ function alpha_edu_render_exam_results_admin_page() {
                 <p class="description"><?php esc_html_e('Dòng thiếu Năm, Khóa thi hoặc CCCD sẽ không được lưu.', 'alpha-edu'); ?></p>
             </form>
 
-            <?php if ($total_pages > 1) : ?>
-                <div class="tablenav bottom">
-                    <div class="tablenav-pages">
-                        <?php
-                        echo wp_kses_post(paginate_links([
-                            'base'      => add_query_arg('exam_paged', '%#%'),
-                            'format'    => '',
-                            'current'   => $current_page,
-                            'total'     => $total_pages,
-                            'prev_text' => __('‹ Trước', 'alpha-edu'),
-                            'next_text' => __('Sau ›', 'alpha-edu'),
-                        ]));
-                        ?>
-                    </div>
-                </div>
+            <?php if ($pagination_links) : ?>
+                <nav class="alpha-exam-pagination" aria-label="<?php echo esc_attr__('Phân trang kết quả thi', 'alpha-edu'); ?>">
+                    <?php echo wp_kses_post($pagination_links); ?>
+                </nav>
             <?php endif; ?>
         <?php endif; ?>
     </div>
