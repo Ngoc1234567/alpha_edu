@@ -12,7 +12,6 @@ get_header();
     <div class="container content-layout">
         <?php while (have_posts()) : the_post(); ?>
             <article <?php post_class('entry-content'); ?>>
-                <h1><?php the_title(); ?></h1>
                 <?php the_content(); ?>
 
                 <?php
