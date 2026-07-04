@@ -8,11 +8,7 @@
 <footer class="site-footer">
     <div class="container footer-inner">
         <div class="footer-brand">
-            <img class="footer-logo" src="<?php echo esc_url(alpha_edu_asset_url('images/logo.png')); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?>">
-            <div class="footer-brand-text">
-                <p class="footer-department">SỞ GIÁO DỤC VÀ ĐÀO TẠO THÀNH PHỐ HUẾ</p>
-                <p class="footer-center-name">TRUNG TÂM NGOẠI NGỮ - TIN HỌC ALPHA</p>
-            </div>
+            <img class="footer-brand-image" src="<?php echo esc_url(alpha_edu_asset_url('images/logo_footer_pastel.png')); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?>">
         </div>
 
         <p class="footer-intro">

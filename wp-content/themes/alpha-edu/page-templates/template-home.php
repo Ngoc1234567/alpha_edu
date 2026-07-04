@@ -10,6 +10,7 @@ $hero_title    = alpha_edu_get_home_field('home_hero_title');
 $hero_subtitle = alpha_edu_get_home_field('home_hero_subtitle');
 $hero_banner   = alpha_edu_get_home_field('home_hero_banner');
 
+$intro_eyebrow = alpha_edu_get_home_field('home_intro_eyebrow');
 $intro_title   = alpha_edu_get_home_field('home_intro_title');
 $intro_content = alpha_edu_get_home_field('home_intro_content');
 $intro_image   = alpha_edu_get_home_field('home_intro_image');
@@ -78,14 +79,18 @@ get_header();
     <?php if ($intro_title || $intro_content || $intro_image) : ?>
     <section class="home-intro section-padding">
         <div class="container intro-grid">
-            <?php if ($intro_title || $intro_content) : ?>
+            <?php if ($intro_eyebrow || $intro_title || $intro_content) : ?>
             <div class="intro-content">
+                <?php if ($intro_eyebrow) : ?>
+                <p class="intro-eyebrow"><?php echo esc_html($intro_eyebrow); ?></p>
+                <?php endif; ?>
+
                 <?php if ($intro_title) : ?>
                 <h2><?php echo esc_html($intro_title); ?></h2>
                 <?php endif; ?>
 
                 <?php if ($intro_content) : ?>
-                <p><?php echo wp_kses_post(nl2br($intro_content)); ?></p>
+                <div class="intro-rich-text"><?php echo wp_kses_post(wpautop($intro_content)); ?></div>
                 <?php endif; ?>
             </div>
             <?php endif; ?>

@@ -29,7 +29,7 @@ function alpha_edu_enqueue_assets() {
     $main_css_ver  = file_exists($main_css_path) ? (string) filemtime($main_css_path) : $theme_version;
     $main_js_ver   = file_exists($main_js_path) ? (string) filemtime($main_js_path) : $theme_version;
 
-    wp_enqueue_style('alpha-edu-fonts', 'https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap', [], null);
+    wp_enqueue_style('alpha-edu-fonts', 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap', [], null);
     wp_enqueue_style('swiper', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css', [], '11');
     wp_enqueue_style('alpha-edu-main', get_template_directory_uri() . '/assets/css/main.css', ['alpha-edu-fonts', 'swiper'], $main_css_ver);
 
