@@ -17,7 +17,7 @@ get_header();
 
                 <?php
                 if (function_exists('alpha_edu_render_registration_form')) {
-                    alpha_edu_render_registration_form(0, true);
+                    alpha_edu_render_registration_form(0, true, false);
                 }
                 ?>
             </article>
