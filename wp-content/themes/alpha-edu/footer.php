@@ -63,7 +63,7 @@
                                 <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h15A1.5 1.5 0 0 1 21 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5zm2.4.8 6.6 5 6.6-5zm13.8 11.4V8.5L12 14 4.8 8.5v9.2z"/>
                             </svg>
                         </span>
-                        <span>Email:</span>
+                        <span>Email: trungtamalpha.tth@gmail.com</span>
                     </li>
                     <li>
                         <span class="footer-contact-icon" aria-hidden="true">

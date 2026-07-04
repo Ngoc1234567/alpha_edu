@@ -113,6 +113,19 @@ function alpha_edu_register_post_types() {
         'show_in_rest' => true,
     ]);
 
+    register_post_type('alpha_registration', [
+        'labels' => [
+            'name'          => __('Đăng ký học', 'alpha-edu'),
+            'singular_name' => __('Đăng ký học', 'alpha-edu'),
+        ],
+        'public'              => false,
+        'show_ui'             => false,
+        'show_in_menu'        => false,
+        'exclude_from_search' => true,
+        'supports'            => ['title'],
+        'capability_type'     => 'post',
+    ]);
+
 }
 add_action('init', 'alpha_edu_register_post_types');
 
@@ -889,6 +902,254 @@ function alpha_edu_render_registration_settings_page() {
     </div>
     <?php
 }
+
+function alpha_edu_registration_cf7_field_names() {
+    return [
+        'last_name'    => 'registration-last-name',
+        'first_name'   => 'registration-first-name',
+        'birthday'     => 'registration-birthday',
+        'birthplace'   => 'registration-birthplace',
+        'phone'        => 'registration-phone',
+        'email'        => 'registration-email',
+        'cccd'         => 'registration-cccd',
+        'cccd_date'    => 'registration-cccd-date',
+        'address'      => 'registration-address',
+        'organization' => 'registration-organization',
+        'type'         => 'registration-type',
+        'program'      => 'registration-program',
+        'course'       => 'registration-course',
+        'schedule'     => 'registration-schedule',
+        'supporter'    => 'registration-supporter',
+        'note'         => 'registration-note',
+    ];
+}
+
+function alpha_edu_clean_registration_value($value, $field = '') {
+    if (is_array($value)) {
+        $value = implode(', ', array_map('sanitize_text_field', wp_unslash($value)));
+    } else {
+        $value = wp_unslash((string) $value);
+    }
+
+    if ('note' === $field) {
+        return sanitize_textarea_field($value);
+    }
+
+    return sanitize_text_field($value);
+}
+
+function alpha_edu_save_registration_submission($contact_form) {
+    if (! class_exists('WPCF7_Submission')) {
+        return;
+    }
+
+    $submission = WPCF7_Submission::get_instance();
+
+    if (! $submission) {
+        return;
+    }
+
+    $posted_data = $submission->get_posted_data();
+    $field_names = alpha_edu_registration_cf7_field_names();
+    $data        = [];
+
+    foreach ($field_names as $key => $posted_key) {
+        $data[$key] = alpha_edu_clean_registration_value($posted_data[$posted_key] ?? '', $key);
+    }
+
+    if (! array_filter([$data['last_name'], $data['first_name'], $data['phone'], $data['email'], $data['course']])) {
+        return;
+    }
+
+    $full_name = trim($data['last_name'] . ' ' . $data['first_name']);
+    $title     = $full_name ?: __('Người đăng ký học', 'alpha-edu');
+
+    if ($data['phone']) {
+        $title .= ' - ' . $data['phone'];
+    }
+
+    $post_id = wp_insert_post([
+        'post_type'   => 'alpha_registration',
+        'post_status' => 'publish',
+        'post_title'  => $title,
+        'post_content'=> $data['note'],
+    ], true);
+
+    if (is_wp_error($post_id) || ! $post_id) {
+        return;
+    }
+
+    foreach ($data as $key => $value) {
+        update_post_meta($post_id, '_' . $key, $value);
+    }
+
+    if ($contact_form && method_exists($contact_form, 'id')) {
+        update_post_meta($post_id, '_cf7_form_id', (int) $contact_form->id());
+    }
+
+    update_post_meta($post_id, '_submitted_at', current_time('mysql'));
+}
+add_action('wpcf7_mail_sent', 'alpha_edu_save_registration_submission');
+
+function alpha_edu_register_registration_management_page() {
+    add_menu_page(
+        __('Quản lý đăng ký học', 'alpha-edu'),
+        __('Đăng ký học', 'alpha-edu'),
+        'manage_options',
+        'alpha-course-registrations',
+        'alpha_edu_render_registration_management_page',
+        'dashicons-clipboard',
+        26
+    );
+}
+add_action('admin_menu', 'alpha_edu_register_registration_management_page', 18);
+
+function alpha_edu_get_registration_query_args($paged = 1) {
+    return [
+        'post_type'      => 'alpha_registration',
+        'post_status'    => 'publish',
+        'posts_per_page' => 20,
+        'paged'          => max(1, (int) $paged),
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+    ];
+}
+
+function alpha_edu_render_registration_management_page() {
+    if (! current_user_can('manage_options')) {
+        wp_die(esc_html__('Bạn không có quyền truy cập trang này.', 'alpha-edu'));
+    }
+
+    $paged = isset($_GET['paged']) ? max(1, absint($_GET['paged'])) : 1;
+    $query = new WP_Query(alpha_edu_get_registration_query_args($paged));
+    $fields = alpha_edu_registration_fields();
+    unset($fields['source_course']);
+    $export_url = wp_nonce_url(
+        admin_url('admin-post.php?action=alpha_edu_export_registrations'),
+        'alpha_edu_export_registrations'
+    );
+    ?>
+    <div class="wrap">
+        <h1 class="wp-heading-inline"><?php esc_html_e('Quản lý đăng ký học', 'alpha-edu'); ?></h1>
+        <a href="<?php echo esc_url($export_url); ?>" class="page-title-action"><?php esc_html_e('Xuất Excel', 'alpha-edu'); ?></a>
+        <hr class="wp-header-end">
+
+        <table class="widefat fixed striped">
+            <thead>
+                <tr>
+                    <th><?php esc_html_e('Ngày gửi', 'alpha-edu'); ?></th>
+                    <th><?php esc_html_e('Họ tên', 'alpha-edu'); ?></th>
+                    <th><?php esc_html_e('Số điện thoại', 'alpha-edu'); ?></th>
+                    <th><?php esc_html_e('Email', 'alpha-edu'); ?></th>
+                    <th><?php esc_html_e('Hình thức', 'alpha-edu'); ?></th>
+                    <th><?php esc_html_e('Chương trình', 'alpha-edu'); ?></th>
+                    <th><?php esc_html_e('Khóa đăng ký', 'alpha-edu'); ?></th>
+                    <th><?php esc_html_e('Lịch học/thi', 'alpha-edu'); ?></th>
+                    <th><?php esc_html_e('Ghi chú', 'alpha-edu'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if ($query->have_posts()) : ?>
+                    <?php while ($query->have_posts()) : $query->the_post(); ?>
+                        <?php
+                        $post_id = get_the_ID();
+                        $last_name = get_post_meta($post_id, '_last_name', true);
+                        $first_name = get_post_meta($post_id, '_first_name', true);
+                        ?>
+                        <tr>
+                            <td><?php echo esc_html(get_the_date('d/m/Y H:i', $post_id)); ?></td>
+                            <td><strong><?php echo esc_html(trim($last_name . ' ' . $first_name)); ?></strong></td>
+                            <td><?php echo esc_html(get_post_meta($post_id, '_phone', true)); ?></td>
+                            <td><?php echo esc_html(get_post_meta($post_id, '_email', true)); ?></td>
+                            <td><?php echo esc_html(get_post_meta($post_id, '_type', true)); ?></td>
+                            <td><?php echo esc_html(get_post_meta($post_id, '_program', true)); ?></td>
+                            <td><?php echo esc_html(get_post_meta($post_id, '_course', true)); ?></td>
+                            <td><?php echo esc_html(get_post_meta($post_id, '_schedule', true)); ?></td>
+                            <td><?php echo esc_html(get_post_meta($post_id, '_note', true)); ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                    <?php wp_reset_postdata(); ?>
+                <?php else : ?>
+                    <tr>
+                        <td colspan="9"><?php esc_html_e('Chưa có người đăng ký nào.', 'alpha-edu'); ?></td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+
+        <?php
+        $pagination = paginate_links([
+            'base'      => add_query_arg('paged', '%#%'),
+            'format'    => '',
+            'current'   => $paged,
+            'total'     => max(1, (int) $query->max_num_pages),
+            'prev_text' => __('&laquo; Trước', 'alpha-edu'),
+            'next_text' => __('Sau &raquo;', 'alpha-edu'),
+        ]);
+
+        if ($pagination) :
+            ?>
+            <div class="tablenav">
+                <div class="tablenav-pages"><?php echo wp_kses_post($pagination); ?></div>
+            </div>
+        <?php endif; ?>
+    </div>
+    <?php
+}
+
+function alpha_edu_export_registrations() {
+    if (! current_user_can('manage_options')) {
+        wp_die(esc_html__('Bạn không có quyền xuất dữ liệu.', 'alpha-edu'));
+    }
+
+    check_admin_referer('alpha_edu_export_registrations');
+
+    $fields = alpha_edu_registration_fields();
+    unset($fields['source_course']);
+    $posts = get_posts([
+        'post_type'      => 'alpha_registration',
+        'post_status'    => 'publish',
+        'posts_per_page' => -1,
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+    ]);
+
+    nocache_headers();
+    header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="dang-ky-hoc-' . gmdate('Y-m-d') . '.xls"');
+    echo "\xEF\xBB\xBF";
+    ?>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th><?php echo esc_html__('Ngày gửi', 'alpha-edu'); ?></th>
+                    <?php foreach ($fields as $label) : ?>
+                        <th><?php echo esc_html($label); ?></th>
+                    <?php endforeach; ?>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($posts as $post) : ?>
+                    <tr>
+                        <td><?php echo esc_html(get_the_date('d/m/Y H:i', $post)); ?></td>
+                        <?php foreach ($fields as $key => $label) : ?>
+                            <td><?php echo esc_html(get_post_meta($post->ID, '_' . $key, true)); ?></td>
+                        <?php endforeach; ?>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+add_action('admin_post_alpha_edu_export_registrations', 'alpha_edu_export_registrations');
 
 function alpha_edu_asset_url($path) {
     return get_template_directory_uri() . '/assets/' . ltrim($path, '/');
