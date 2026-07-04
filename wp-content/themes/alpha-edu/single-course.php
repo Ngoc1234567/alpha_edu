@@ -15,6 +15,8 @@ get_header();
         $post_id     = get_the_ID();
         $intro       = alpha_edu_get_course_field($post_id, 'course_detail_intro');
         $fees        = alpha_edu_parse_course_fee_rows(alpha_edu_get_course_field($post_id, 'course_fee_rows'));
+        $course_key  = sanitize_title(remove_accents(get_the_title($post_id)));
+        $show_exam_fee = false !== strpos($course_key, 'cntt-co-ban') || false !== strpos($course_key, 'cong-nghe-thong-tin-co-ban');
         $guide_title = alpha_edu_get_course_field($post_id, 'course_registration_title', __('HƯỚNG DẪN ĐĂNG KÝ:', 'alpha-edu'));
         $guide_items = alpha_edu_get_course_registration_items(alpha_edu_get_course_field($post_id, 'course_registration_items'));
         $button_text = alpha_edu_get_course_field($post_id, 'course_register_button_text', __('ĐĂNG KÝ TẠI ĐÂY', 'alpha-edu'));
@@ -40,7 +42,9 @@ get_header();
                             <tr>
                                 <th><?php esc_html_e('KHÓA HỌC', 'alpha-edu'); ?></th>
                                 <th><?php esc_html_e('HỌC PHÍ', 'alpha-edu'); ?></th>
+                                <?php if ($show_exam_fee) : ?>
                                 <th><?php esc_html_e('LỆ PHÍ THI', 'alpha-edu'); ?></th>
+                                <?php endif; ?>
                             </tr>
                         </thead>
                         <tbody>
@@ -53,7 +57,9 @@ get_header();
                                     <?php endif; ?>
                                 </td>
                                 <td><?php echo esc_html($row['tuition']); ?></td>
+                                <?php if ($show_exam_fee) : ?>
                                 <td><?php echo esc_html($row['exam_fee']); ?></td>
+                                <?php endif; ?>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>

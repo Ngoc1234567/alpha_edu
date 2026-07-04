@@ -25,7 +25,7 @@ $documents = function_exists('alpha_edu_get_documents_data') ? alpha_edu_get_doc
 
         <?php if ($documents) : ?>
             <div class="documents-list">
-                <?php foreach ($documents as $document) : ?>
+                <?php foreach ($documents as $document_index => $document) : ?>
                     <article class="document-item">
                         <div class="document-info">
                             <h2><?php echo esc_html($document['title']); ?></h2>
@@ -33,7 +33,7 @@ $documents = function_exists('alpha_edu_get_documents_data') ? alpha_edu_get_doc
                                 <p><?php echo esc_html($document['description']); ?></p>
                             <?php endif; ?>
                         </div>
-                        <a class="document-download" href="<?php echo esc_url($document['file_url']); ?>" target="_blank" rel="noopener">
+                        <a class="document-download" href="<?php echo esc_url(alpha_edu_get_document_download_url($document_index)); ?>" download>
                             Tải xuống
                         </a>
                     </article>

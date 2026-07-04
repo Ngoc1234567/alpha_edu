@@ -1534,6 +1534,67 @@ function alpha_edu_get_documents_data() {
     }, $documents)));
 }
 
+function alpha_edu_get_document_download_url($document_index) {
+    return add_query_arg(
+        [
+            'action' => 'alpha_edu_download_document',
+            'document' => absint($document_index),
+        ],
+        admin_url('admin-post.php')
+    );
+}
+
+function alpha_edu_handle_document_download() {
+    $document_index = isset($_GET['document']) ? absint(wp_unslash($_GET['document'])) : 0;
+    $documents = alpha_edu_get_documents_data();
+
+    if (! isset($documents[$document_index])) {
+        status_header(404);
+        wp_die(esc_html__('Không tìm thấy văn bản/Biểu mẫu.', 'alpha-edu'));
+    }
+
+    $document = $documents[$document_index];
+    $file_id = absint($document['file_id'] ?? 0);
+    $file_url = esc_url_raw($document['file_url'] ?? '');
+
+    if (! $file_id && $file_url) {
+        $file_id = attachment_url_to_postid($file_url);
+    }
+
+    if ($file_id) {
+        $file_path = get_attached_file($file_id);
+
+        if ($file_path && file_exists($file_path) && is_readable($file_path)) {
+            $filename = basename($file_path);
+            $filetype = wp_check_filetype($filename);
+            $mime_type = $filetype['type'] ?: 'application/octet-stream';
+
+            while (ob_get_level()) {
+                ob_end_clean();
+            }
+
+            nocache_headers();
+            header('Content-Type: ' . $mime_type);
+            header('Content-Disposition: attachment; filename="' . rawurlencode($filename) . '"');
+            header('Content-Length: ' . filesize($file_path));
+            header('X-Content-Type-Options: nosniff');
+
+            readfile($file_path);
+            exit;
+        }
+    }
+
+    if ($file_url) {
+        wp_safe_redirect($file_url);
+        exit;
+    }
+
+    status_header(404);
+    wp_die(esc_html__('File tải xuống không tồn tại.', 'alpha-edu'));
+}
+add_action('admin_post_alpha_edu_download_document', 'alpha_edu_handle_document_download');
+add_action('admin_post_nopriv_alpha_edu_download_document', 'alpha_edu_handle_document_download');
+
 function alpha_edu_register_documents_admin_page() {
     $hook = add_menu_page(
         __('Văn bản/Biểu mẫu', 'alpha-edu'),
