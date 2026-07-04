@@ -123,12 +123,23 @@ if ($has_searched && function_exists('alpha_edu_lookup_exam_results')) {
                     </thead>
                     <tbody>
                         <?php foreach ($results as $row) : ?>
+                            <?php
+                            $result_text = trim((string) ($row['result'] ?? ''));
+                            $result_key = sanitize_title(remove_accents($result_text));
+                            $result_class = '';
+
+                            if ('dat' === $result_key) {
+                                $result_class = ' is-pass';
+                            } elseif ('khong-dat' === $result_key) {
+                                $result_class = ' is-fail';
+                            }
+                            ?>
                             <tr>
                                 <td><?php echo esc_html($row['cccd']); ?></td>
                                 <td>
                                     <span>- Điểm lý thuyết: <strong><?php echo esc_html($row['theory'] ?: '-'); ?></strong></span>
                                     <span>- Điểm thực hành: <strong><?php echo esc_html($row['practice'] ?: '-'); ?></strong></span>
-                                    <span>- Kết quả thi: <strong><?php echo esc_html($row['result'] ?: '-'); ?></strong></span>
+                                    <span>- Kết quả thi: <strong class="score-result-status<?php echo esc_attr($result_class); ?>"><?php echo esc_html($result_text ?: '-'); ?></strong></span>
                                 </td>
                                 <td><?php echo esc_html($row['note'] ?: '-'); ?></td>
                             </tr>

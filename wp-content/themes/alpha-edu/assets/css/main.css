@@ -1454,6 +1454,14 @@ a {
     font-weight: 900;
 }
 
+.score-result-status.is-pass {
+    color: #16803c;
+}
+
+.score-result-status.is-fail {
+    color: var(--alpha-red);
+}
+
 .score-message {
     margin: 0;
     padding: 22px 24px;
