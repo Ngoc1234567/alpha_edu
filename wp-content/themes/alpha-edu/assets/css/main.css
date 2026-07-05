@@ -165,7 +165,7 @@ a {
     margin: 0 0 12px;
     color: var(--alpha-blue);
     font-size: clamp(23px, 4.2vw, 36px);
-    font-weight: 900;
+    font-weight: 500;
     line-height: 1.15;
 }
 
@@ -173,7 +173,7 @@ a {
     margin: 0;
     color: var(--alpha-red);
     font-size: clamp(18px, 2.7vw, 27px);
-    font-weight: 900;
+    font-weight: 500;
 }
 
 .hero-banner {
@@ -210,7 +210,7 @@ a {
     color: var(--alpha-blue);
     font-size: clamp(26px, 4vw, 43px);
     line-height: 1;
-    font-weight: 900;
+    font-weight: 500;
 }
 
 .intro-heading h2 {
@@ -222,7 +222,7 @@ a {
     color: #111;
     font-size: 18px;
     line-height: 1.35;
-    font-weight: 700;
+    font-weight: 400;
 }
 
 .intro-heading .intro-eyebrow,
@@ -231,7 +231,7 @@ a {
     color: #050505;
     font-size: clamp(18px, 2.5vw, 29px);
     line-height: 1.1;
-    font-weight: 900;
+    font-weight: 500;
     text-transform: uppercase;
 }
 
@@ -311,7 +311,7 @@ a {
     color: #fff;
     font-size: 31px;
     line-height: 1.25;
-    font-weight: 900;
+    font-weight: 500;
 }
 
 .course-card p {
@@ -331,7 +331,7 @@ a {
     border: 1px solid rgba(255, 255, 255, 0.75);
     border-radius: 999px;
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 400;
 }
 
 .home-stats {
@@ -351,7 +351,7 @@ a {
     text-align: center;
     font-size: clamp(26px, 4.2vw, 41px);
     line-height: 1.1;
-    font-weight: 900;
+    font-weight: 500;
 }
 
 .stats-grid {
@@ -376,14 +376,14 @@ a {
     color: var(--alpha-blue);
     font-size: 38px;
     line-height: 1;
-    font-weight: 900;
+    font-weight: 500;
 }
 
 .stat-card span {
     margin-top: 8px;
     color: #fff;
     font-size: 18px;
-    font-weight: 900;
+    font-weight: 400;
 }
 
 .home-testimonials {
@@ -591,6 +591,16 @@ a {
     font-weight: 700;
 }
 
+.footer-contact-list a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.footer-contact-list a:hover,
+.footer-contact-list a:focus-visible {
+    text-decoration: underline;
+}
+
 .footer-contact-icon {
     width: 42px;
     height: 42px;
@@ -744,7 +754,7 @@ a {
     text-align: center;
     font-size: clamp(36px, 6.5vw, 74px);
     line-height: 1;
-    font-weight: 900;
+    font-weight: 500;
     letter-spacing: 0;
     text-transform: uppercase;
 }
@@ -762,7 +772,7 @@ a {
     color: #050505;
     font-size: clamp(19px, 2.8vw, 31px);
     line-height: 1.1;
-    font-weight: 900;
+    font-weight: 500;
     text-transform: uppercase;
 }
 
@@ -800,7 +810,7 @@ a {
     color: var(--alpha-blue);
     font-size: clamp(26px, 4vw, 43px);
     line-height: 1.08;
-    font-weight: 900;
+    font-weight: 500;
     letter-spacing: 0;
     text-transform: uppercase;
     opacity: 1;
@@ -899,7 +909,7 @@ a {
     color: #050505;
     font-size: 18px;
     line-height: 1.38;
-    font-weight: 800;
+    font-weight: 400;
 }
 
 .about-rich-text p {
@@ -1002,7 +1012,7 @@ a {
     color: var(--alpha-blue);
     font-size: clamp(28px, 4.4vw, 46px);
     line-height: 0.95;
-    font-weight: 900;
+    font-weight: 500;
 }
 
 .about-stat-card span {
@@ -1010,7 +1020,7 @@ a {
     color: #fff;
     font-size: clamp(16px, 2.2vw, 24px);
     line-height: 1.08;
-    font-weight: 900;
+    font-weight: 400;
     text-transform: uppercase;
 }
 
