@@ -112,7 +112,7 @@ a {
     align-items: center;
     min-height: 36px;
     color: var(--alpha-blue-dark);
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 800;
     white-space: nowrap;
     padding: 0 2px;
@@ -2081,7 +2081,7 @@ a {
     }
 
     .main-menu a {
-        font-size: 13px;
+        font-size: 14px;
     }
 
     .header-cta {
@@ -2133,7 +2133,7 @@ a {
 
     .main-menu a {
         min-height: 32px;
-        font-size: 12px;
+        font-size: 13px;
     }
 
     .header-cta {
