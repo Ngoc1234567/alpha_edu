@@ -1033,6 +1033,10 @@ function alpha_edu_render_registration_management_page() {
         <a href="<?php echo esc_url($export_url); ?>" class="page-title-action"><?php esc_html_e('Xuất Excel', 'alpha-edu'); ?></a>
         <hr class="wp-header-end">
 
+        <?php if (isset($_GET['deleted'])) : ?>
+            <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã xóa đăng ký.', 'alpha-edu'); ?></p></div>
+        <?php endif; ?>
+
         <table class="widefat fixed striped">
             <thead>
                 <tr>
@@ -1045,6 +1049,7 @@ function alpha_edu_render_registration_management_page() {
                     <th><?php esc_html_e('Khóa đăng ký', 'alpha-edu'); ?></th>
                     <th><?php esc_html_e('Lịch học/thi', 'alpha-edu'); ?></th>
                     <th><?php esc_html_e('Ghi chú', 'alpha-edu'); ?></th>
+                    <th><?php esc_html_e('Thao tác', 'alpha-edu'); ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -1054,6 +1059,16 @@ function alpha_edu_render_registration_management_page() {
                         $post_id = get_the_ID();
                         $last_name = get_post_meta($post_id, '_last_name', true);
                         $first_name = get_post_meta($post_id, '_first_name', true);
+                        $delete_url = wp_nonce_url(
+                            add_query_arg(
+                                [
+                                    'action'  => 'alpha_edu_delete_registration',
+                                    'post_id' => $post_id,
+                                ],
+                                admin_url('admin-post.php')
+                            ),
+                            'alpha_edu_delete_registration_' . $post_id
+                        );
                         ?>
                         <tr>
                             <td><?php echo esc_html(get_the_date('d/m/Y H:i', $post_id)); ?></td>
@@ -1065,12 +1080,19 @@ function alpha_edu_render_registration_management_page() {
                             <td><?php echo esc_html(get_post_meta($post_id, '_course', true)); ?></td>
                             <td><?php echo esc_html(get_post_meta($post_id, '_schedule', true)); ?></td>
                             <td><?php echo esc_html(get_post_meta($post_id, '_note', true)); ?></td>
+                            <td>
+                                <a
+                                    href="<?php echo esc_url($delete_url); ?>"
+                                    class="button button-small alpha-delete-registration"
+                                    onclick="return confirm('<?php echo esc_js(__('Bạn có chắc muốn xóa đăng ký này?', 'alpha-edu')); ?>');"
+                                ><?php esc_html_e('Xóa', 'alpha-edu'); ?></a>
+                            </td>
                         </tr>
                     <?php endwhile; ?>
                     <?php wp_reset_postdata(); ?>
                 <?php else : ?>
                     <tr>
-                        <td colspan="9"><?php esc_html_e('Chưa có người đăng ký nào.', 'alpha-edu'); ?></td>
+                        <td colspan="10"><?php esc_html_e('Chưa có người đăng ký nào.', 'alpha-edu'); ?></td>
                     </tr>
                 <?php endif; ?>
             </tbody>
@@ -1149,6 +1171,30 @@ function alpha_edu_export_registrations() {
     exit;
 }
 add_action('admin_post_alpha_edu_export_registrations', 'alpha_edu_export_registrations');
+
+function alpha_edu_delete_registration() {
+    if (! current_user_can('manage_options')) {
+        wp_die(esc_html__('Bạn không có quyền xóa dữ liệu.', 'alpha-edu'));
+    }
+
+    $post_id = isset($_GET['post_id']) ? absint($_GET['post_id']) : 0;
+
+    check_admin_referer('alpha_edu_delete_registration_' . $post_id);
+
+    if ($post_id && get_post_type($post_id) === 'alpha_registration') {
+        wp_delete_post($post_id, true);
+    }
+
+    wp_safe_redirect(add_query_arg(
+        [
+            'page'    => 'alpha-course-registrations',
+            'deleted' => 1,
+        ],
+        admin_url('admin.php')
+    ));
+    exit;
+}
+add_action('admin_post_alpha_edu_delete_registration', 'alpha_edu_delete_registration');
 
 function alpha_edu_asset_url($path) {
     return get_template_directory_uri() . '/assets/' . ltrim($path, '/');
