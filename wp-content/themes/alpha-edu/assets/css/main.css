@@ -2374,10 +2374,6 @@ a {
         margin-bottom: 32px;
     }
 
-    .header-cta {
-        display: none;
-    }
-
     .course-grid {
         grid-template-columns: 1fr;
     }

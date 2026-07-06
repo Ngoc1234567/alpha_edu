@@ -1034,69 +1034,100 @@ function alpha_edu_render_registration_management_page() {
         <hr class="wp-header-end">
 
         <?php if (isset($_GET['deleted'])) : ?>
-            <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã xóa đăng ký.', 'alpha-edu'); ?></p></div>
+            <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã xóa đăng ký đã chọn.', 'alpha-edu'); ?></p></div>
         <?php endif; ?>
 
-        <table class="widefat fixed striped">
-            <thead>
-                <tr>
-                    <th><?php esc_html_e('Ngày gửi', 'alpha-edu'); ?></th>
-                    <th><?php esc_html_e('Họ tên', 'alpha-edu'); ?></th>
-                    <th><?php esc_html_e('Số điện thoại', 'alpha-edu'); ?></th>
-                    <th><?php esc_html_e('Email', 'alpha-edu'); ?></th>
-                    <th><?php esc_html_e('Hình thức', 'alpha-edu'); ?></th>
-                    <th><?php esc_html_e('Chương trình', 'alpha-edu'); ?></th>
-                    <th><?php esc_html_e('Khóa đăng ký', 'alpha-edu'); ?></th>
-                    <th><?php esc_html_e('Lịch học/thi', 'alpha-edu'); ?></th>
-                    <th><?php esc_html_e('Ghi chú', 'alpha-edu'); ?></th>
-                    <th><?php esc_html_e('Thao tác', 'alpha-edu'); ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if ($query->have_posts()) : ?>
-                    <?php while ($query->have_posts()) : $query->the_post(); ?>
-                        <?php
-                        $post_id = get_the_ID();
-                        $last_name = get_post_meta($post_id, '_last_name', true);
-                        $first_name = get_post_meta($post_id, '_first_name', true);
-                        $delete_url = wp_nonce_url(
-                            add_query_arg(
-                                [
-                                    'action'  => 'alpha_edu_delete_registration',
-                                    'post_id' => $post_id,
-                                ],
-                                admin_url('admin-post.php')
-                            ),
-                            'alpha_edu_delete_registration_' . $post_id
-                        );
-                        ?>
-                        <tr>
-                            <td><?php echo esc_html(get_the_date('d/m/Y H:i', $post_id)); ?></td>
-                            <td><strong><?php echo esc_html(trim($last_name . ' ' . $first_name)); ?></strong></td>
-                            <td><?php echo esc_html(get_post_meta($post_id, '_phone', true)); ?></td>
-                            <td><?php echo esc_html(get_post_meta($post_id, '_email', true)); ?></td>
-                            <td><?php echo esc_html(get_post_meta($post_id, '_type', true)); ?></td>
-                            <td><?php echo esc_html(get_post_meta($post_id, '_program', true)); ?></td>
-                            <td><?php echo esc_html(get_post_meta($post_id, '_course', true)); ?></td>
-                            <td><?php echo esc_html(get_post_meta($post_id, '_schedule', true)); ?></td>
-                            <td><?php echo esc_html(get_post_meta($post_id, '_note', true)); ?></td>
-                            <td>
-                                <a
-                                    href="<?php echo esc_url($delete_url); ?>"
-                                    class="button button-small alpha-delete-registration"
-                                    onclick="return confirm('<?php echo esc_js(__('Bạn có chắc muốn xóa đăng ký này?', 'alpha-edu')); ?>');"
-                                ><?php esc_html_e('Xóa', 'alpha-edu'); ?></a>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
-                    <?php wp_reset_postdata(); ?>
-                <?php else : ?>
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+            <?php wp_nonce_field('alpha_edu_bulk_delete_registrations'); ?>
+            <input type="hidden" name="action" value="alpha_edu_bulk_delete_registrations">
+
+            <table class="widefat fixed striped">
+                <thead>
                     <tr>
-                        <td colspan="10"><?php esc_html_e('Chưa có người đăng ký nào.', 'alpha-edu'); ?></td>
+                        <th style="width:32px;"><input type="checkbox" id="alpha-reg-select-all"></th>
+                        <th><?php esc_html_e('Ngày gửi', 'alpha-edu'); ?></th>
+                        <th><?php esc_html_e('Họ tên', 'alpha-edu'); ?></th>
+                        <th><?php esc_html_e('Số điện thoại', 'alpha-edu'); ?></th>
+                        <th><?php esc_html_e('Email', 'alpha-edu'); ?></th>
+                        <th><?php esc_html_e('Hình thức', 'alpha-edu'); ?></th>
+                        <th><?php esc_html_e('Chương trình', 'alpha-edu'); ?></th>
+                        <th><?php esc_html_e('Khóa đăng ký', 'alpha-edu'); ?></th>
+                        <th><?php esc_html_e('Lịch học/thi', 'alpha-edu'); ?></th>
+                        <th><?php esc_html_e('Ghi chú', 'alpha-edu'); ?></th>
+                        <th><?php esc_html_e('Thao tác', 'alpha-edu'); ?></th>
                     </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php if ($query->have_posts()) : ?>
+                        <?php while ($query->have_posts()) : $query->the_post(); ?>
+                            <?php
+                            $post_id = get_the_ID();
+                            $last_name = get_post_meta($post_id, '_last_name', true);
+                            $first_name = get_post_meta($post_id, '_first_name', true);
+                            $delete_url = wp_nonce_url(
+                                add_query_arg(
+                                    [
+                                        'action'  => 'alpha_edu_delete_registration',
+                                        'post_id' => $post_id,
+                                    ],
+                                    admin_url('admin-post.php')
+                                ),
+                                'alpha_edu_delete_registration_' . $post_id
+                            );
+                            ?>
+                            <tr>
+                                <td><input type="checkbox" class="alpha-reg-row-checkbox" name="registration_ids[]" value="<?php echo esc_attr($post_id); ?>"></td>
+                                <td><?php echo esc_html(get_the_date('d/m/Y H:i', $post_id)); ?></td>
+                                <td><strong><?php echo esc_html(trim($last_name . ' ' . $first_name)); ?></strong></td>
+                                <td><?php echo esc_html(get_post_meta($post_id, '_phone', true)); ?></td>
+                                <td><?php echo esc_html(get_post_meta($post_id, '_email', true)); ?></td>
+                                <td><?php echo esc_html(get_post_meta($post_id, '_type', true)); ?></td>
+                                <td><?php echo esc_html(get_post_meta($post_id, '_program', true)); ?></td>
+                                <td><?php echo esc_html(get_post_meta($post_id, '_course', true)); ?></td>
+                                <td><?php echo esc_html(get_post_meta($post_id, '_schedule', true)); ?></td>
+                                <td><?php echo esc_html(get_post_meta($post_id, '_note', true)); ?></td>
+                                <td>
+                                    <a
+                                        href="<?php echo esc_url($delete_url); ?>"
+                                        class="button button-small alpha-delete-registration"
+                                        onclick="return confirm('<?php echo esc_js(__('Bạn có chắc muốn xóa đăng ký này?', 'alpha-edu')); ?>');"
+                                    ><?php esc_html_e('Xóa', 'alpha-edu'); ?></a>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                        <?php wp_reset_postdata(); ?>
+                    <?php else : ?>
+                        <tr>
+                            <td colspan="11"><?php esc_html_e('Chưa có người đăng ký nào.', 'alpha-edu'); ?></td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+
+            <?php if ($query->post_count > 0) : ?>
+                <p>
+                    <button
+                        type="submit"
+                        class="button"
+                        onclick="return confirm('<?php echo esc_js(__('Bạn có chắc muốn xóa các đăng ký đã chọn?', 'alpha-edu')); ?>');"
+                    ><?php esc_html_e('Xóa các mục đã chọn', 'alpha-edu'); ?></button>
+                </p>
+            <?php endif; ?>
+        </form>
+
+        <script>
+            (function () {
+                var selectAll = document.getElementById('alpha-reg-select-all');
+                if (! selectAll) {
+                    return;
+                }
+                selectAll.addEventListener('change', function () {
+                    document.querySelectorAll('.alpha-reg-row-checkbox').forEach(function (checkbox) {
+                        checkbox.checked = selectAll.checked;
+                    });
+                });
+            })();
+        </script>
 
         <?php
         $pagination = paginate_links([
@@ -1195,6 +1226,34 @@ function alpha_edu_delete_registration() {
     exit;
 }
 add_action('admin_post_alpha_edu_delete_registration', 'alpha_edu_delete_registration');
+
+function alpha_edu_bulk_delete_registrations() {
+    if (! current_user_can('manage_options')) {
+        wp_die(esc_html__('Bạn không có quyền xóa dữ liệu.', 'alpha-edu'));
+    }
+
+    check_admin_referer('alpha_edu_bulk_delete_registrations');
+
+    $ids = isset($_POST['registration_ids']) && is_array($_POST['registration_ids'])
+        ? array_map('absint', wp_unslash($_POST['registration_ids']))
+        : [];
+
+    foreach ($ids as $id) {
+        if ($id && get_post_type($id) === 'alpha_registration') {
+            wp_delete_post($id, true);
+        }
+    }
+
+    wp_safe_redirect(add_query_arg(
+        [
+            'page'    => 'alpha-course-registrations',
+            'deleted' => 1,
+        ],
+        admin_url('admin.php')
+    ));
+    exit;
+}
+add_action('admin_post_alpha_edu_bulk_delete_registrations', 'alpha_edu_bulk_delete_registrations');
 
 function alpha_edu_asset_url($path) {
     return get_template_directory_uri() . '/assets/' . ltrim($path, '/');
@@ -1727,12 +1786,22 @@ function alpha_edu_handle_exam_results_save_rows() {
         $clean_rows[$index] = $item;
     }
 
+    $delete_indexes = isset($_POST['alpha_exam_delete']) && is_array($_POST['alpha_exam_delete'])
+        ? array_map('absint', wp_unslash($_POST['alpha_exam_delete']))
+        : [];
+
+    foreach ($delete_indexes as $delete_index) {
+        unset($clean_rows[$delete_index]);
+    }
+
     $data['rows'] = array_values($clean_rows);
     $data['imported_at'] = current_time('mysql');
 
     update_option('alpha_edu_exam_results_data', $data, false);
 
-    wp_safe_redirect(add_query_arg('alpha_exam_status', 'saved', wp_get_referer()));
+    $status = $delete_indexes ? 'deleted' : 'saved';
+
+    wp_safe_redirect(add_query_arg('alpha_exam_status', $status, wp_get_referer()));
     exit;
 }
 add_action('admin_post_alpha_edu_save_exam_results_rows', 'alpha_edu_handle_exam_results_save_rows');
@@ -1876,6 +1945,8 @@ function alpha_edu_render_exam_results_admin_page() {
             <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã cập nhật dữ liệu kết quả thi.', 'alpha-edu'); ?></p></div>
         <?php elseif ('saved' === $status) : ?>
             <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã lưu các dòng kết quả thi.', 'alpha-edu'); ?></p></div>
+        <?php elseif ('deleted' === $status) : ?>
+            <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã xóa các dòng kết quả thi đã chọn.', 'alpha-edu'); ?></p></div>
         <?php elseif ('missing' === $status) : ?>
             <div class="notice notice-error is-dismissible"><p><?php esc_html_e('Vui lòng chọn file để upload.', 'alpha-edu'); ?></p></div>
         <?php elseif ('invalid' === $status) : ?>
@@ -1944,6 +2015,7 @@ function alpha_edu_render_exam_results_admin_page() {
                     <table class="widefat striped" style="min-width:1320px;border:0;">
                         <thead>
                             <tr>
+                                <th style="width:32px;"><input type="checkbox" id="alpha-exam-select-all"></th>
                                 <th style="width:84px;"><?php esc_html_e('Năm', 'alpha-edu'); ?></th>
                                 <th style="width:360px;"><?php esc_html_e('Khóa thi', 'alpha-edu'); ?></th>
                                 <th style="width:170px;"><?php esc_html_e('CCCD', 'alpha-edu'); ?></th>
@@ -1957,6 +2029,7 @@ function alpha_edu_render_exam_results_admin_page() {
                         <tbody>
                             <?php foreach ($paged_rows as $index => $row) : ?>
                                 <tr>
+                                    <td><input type="checkbox" class="alpha-exam-row-checkbox" name="alpha_exam_delete[]" value="<?php echo esc_attr($index); ?>"></td>
                                     <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][year]" value="<?php echo esc_attr($row['year']); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][course]" value="<?php echo esc_attr($row['course']); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][cccd]" value="<?php echo esc_attr($row['cccd']); ?>" style="width:100%;"></td>
@@ -1975,9 +2048,30 @@ function alpha_edu_render_exam_results_admin_page() {
                     <p><?php esc_html_e('Không tìm thấy dòng kết quả thi phù hợp.', 'alpha-edu'); ?></p>
                 <?php endif; ?>
 
-                <?php submit_button(__('Lưu chỉnh sửa kết quả thi', 'alpha-edu')); ?>
+                <?php submit_button(__('Lưu chỉnh sửa kết quả thi', 'alpha-edu'), 'primary', 'submit', false); ?>
+                <button
+                    type="submit"
+                    name="alpha_exam_bulk_action"
+                    value="delete"
+                    class="button"
+                    onclick="return confirm('<?php echo esc_js(__('Bạn có chắc muốn xóa các dòng kết quả thi đã chọn?', 'alpha-edu')); ?>');"
+                ><?php esc_html_e('Xóa các dòng đã chọn', 'alpha-edu'); ?></button>
                 <p class="description"><?php esc_html_e('Dòng thiếu Năm, Khóa thi hoặc CCCD sẽ không được lưu.', 'alpha-edu'); ?></p>
             </form>
+
+            <script>
+                (function () {
+                    var selectAll = document.getElementById('alpha-exam-select-all');
+                    if (! selectAll) {
+                        return;
+                    }
+                    selectAll.addEventListener('change', function () {
+                        document.querySelectorAll('.alpha-exam-row-checkbox').forEach(function (checkbox) {
+                            checkbox.checked = selectAll.checked;
+                        });
+                    });
+                })();
+            </script>
 
             <?php if ($pagination_links) : ?>
                 <nav class="alpha-exam-pagination" aria-label="<?php echo esc_attr__('Phân trang kết quả thi', 'alpha-edu'); ?>">
