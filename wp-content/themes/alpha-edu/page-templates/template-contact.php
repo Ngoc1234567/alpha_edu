@@ -12,7 +12,7 @@ get_header();
     <div class="container contact-layout">
         <?php while (have_posts()) : the_post(); ?>
             <article <?php post_class('contact-content'); ?>>
-                <div class="contact-info">
+                <div class="contact-info"> 
                     <?php the_content(); ?>
                 </div>
             </article>
