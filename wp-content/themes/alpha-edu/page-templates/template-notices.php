@@ -40,7 +40,6 @@ $notice_query = new WP_Query([
                                 <span class="notice-mark" aria-hidden="true"></span>
                                 <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
                             </h2>
-                            <time datetime="<?php echo esc_attr(get_the_date('c')); ?>">[<?php echo esc_html(get_the_date('d/m/Y')); ?>]</time>
                             <div class="notice-content">
                                 <?php echo wp_kses_post($notice_body); ?>
                             </div>

@@ -30,7 +30,6 @@ $notice_page_url = ! empty($notice_page_ids) ? get_permalink((int) $notice_page_
 
                 <header class="notice-detail-header">
                     <h1><?php the_title(); ?></h1>
-                    <time datetime="<?php echo esc_attr(get_the_date('c')); ?>">[<?php echo esc_html(get_the_date('d/m/Y')); ?>]</time>
                 </header>
 
                 <div class="notice-detail-content">

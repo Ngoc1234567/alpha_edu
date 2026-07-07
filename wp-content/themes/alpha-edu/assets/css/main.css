@@ -434,6 +434,150 @@ a {
     opacity: 1;
 }
 
+.floating-contact {
+    position: fixed;
+    right: 18px;
+    top: 50%;
+    z-index: 120;
+    display: grid;
+    gap: 14px;
+    transform: translateY(-50%);
+}
+
+.floating-contact-button {
+    position: relative;
+    width: 54px;
+    height: 54px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    color: #fff;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+    isolation: isolate;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.floating-contact-button::before,
+.floating-contact-button::after {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    z-index: -1;
+    border-radius: inherit;
+    background: currentColor;
+    opacity: 0.16;
+    animation: floating-contact-pulse 1800ms ease-out infinite;
+}
+
+.floating-contact-button::after {
+    inset: -10px;
+    opacity: 0.08;
+    animation-delay: 450ms;
+}
+
+.floating-contact-button:hover,
+.floating-contact-button:focus-visible {
+    transform: translateY(-3px) scale(1.06);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+.floating-contact-icon {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: inherit;
+    background: rgba(255, 255, 255, 0.16);
+    animation: floating-contact-swing 1350ms ease-in-out infinite;
+    transform-origin: 50% 80%;
+}
+
+.floating-contact-button:nth-child(2) .floating-contact-icon {
+    animation-delay: 150ms;
+}
+
+.floating-contact-button:nth-child(3) .floating-contact-icon {
+    animation-delay: 300ms;
+}
+
+.floating-contact-facebook {
+    background: #1877f2;
+    color: #1877f2;
+}
+
+.floating-contact-zalo {
+    background: #1aa7ec;
+    color: #1aa7ec;
+}
+
+.floating-contact-phone {
+    background: var(--alpha-red);
+    color: var(--alpha-red);
+}
+
+.floating-contact-facebook .floating-contact-icon,
+.floating-contact-zalo .floating-contact-icon,
+.floating-contact-phone .floating-contact-icon {
+    color: #fff;
+}
+
+.floating-contact svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+.floating-contact-facebook-text {
+    color: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 31px;
+    line-height: 1;
+    font-weight: 800;
+}
+
+.floating-contact-zalo-text {
+    color: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: 0;
+}
+
+@keyframes floating-contact-swing {
+    0%, 100% {
+        transform: rotate(0deg) translateY(0);
+    }
+
+    18% {
+        transform: rotate(-10deg) translateY(-1px);
+    }
+
+    36% {
+        transform: rotate(8deg) translateY(1px);
+    }
+
+    54% {
+        transform: rotate(-6deg) translateY(0);
+    }
+
+    72% {
+        transform: rotate(4deg) translateY(-1px);
+    }
+}
+
+@keyframes floating-contact-pulse {
+    0% {
+        transform: scale(0.82);
+        opacity: 0.24;
+    }
+
+    80%, 100% {
+        transform: scale(1.28);
+        opacity: 0;
+    }
+}
+
 .site-footer {
     background: #f1fbff;
     color: #08345f;
@@ -2983,5 +3127,61 @@ a {
     .featured-news-item h3 {
         font-size: 14px;
         line-height: 1.4;
+    }
+}
+
+
+@media (max-width: 860px) {
+    .floating-contact {
+        right: 12px;
+        gap: 11px;
+    }
+
+    .floating-contact-button {
+        width: 48px;
+        height: 48px;
+    }
+
+    .floating-contact-icon {
+        width: 37px;
+        height: 37px;
+    }
+
+    .floating-contact-facebook-text {
+        font-size: 27px;
+    }
+
+    .floating-contact-zalo-text {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 520px) {
+    .floating-contact {
+        right: 10px;
+        gap: 10px;
+    }
+
+    .floating-contact-button {
+        width: 44px;
+        height: 44px;
+    }
+
+    .floating-contact-icon {
+        width: 34px;
+        height: 34px;
+    }
+
+    .floating-contact svg {
+        width: 21px;
+        height: 21px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .floating-contact-button::before,
+    .floating-contact-button::after,
+    .floating-contact-icon {
+        animation: none;
     }
 }

@@ -455,7 +455,10 @@ function alpha_edu_render_featured_news_block() {
 }
 
 function alpha_edu_should_inject_featured_news() {
-    return ! is_admin() && is_page_template('page-templates/template-home.php');
+    return ! is_admin() && is_page_template([
+        'page-templates/template-home.php',
+        'page-templates/template-about.php',
+    ]);
 }
 
 function alpha_edu_start_featured_news_buffer() {
@@ -501,6 +504,63 @@ function alpha_edu_inject_featured_news_block($html) {
 
     return $html;
 }
+
+function alpha_edu_render_floating_contact_buttons() {
+    $buttons = apply_filters('alpha_edu_floating_contact_buttons', [
+        [
+            'key'   => 'facebook',
+            'label' => __('Facebook', 'alpha-edu'),
+            'url'   => 'https://www.facebook.com/trungtamNNTHAlpha',
+            'icon'  => 'facebook',
+        ],
+        [
+            'key'   => 'zalo',
+            'label' => __('Zalo', 'alpha-edu'),
+            'url'   => 'https://zalo.me/0766508169',
+            'icon'  => 'zalo',
+        ],
+        [
+            'key'   => 'phone',
+            'label' => __('Gọi Alpha Center', 'alpha-edu'),
+            'url'   => 'tel:0796670717',
+            'icon'  => 'phone',
+        ],
+    ]);
+
+    if (! $buttons) {
+        return;
+    }
+    ?>
+    <nav class="floating-contact" aria-label="<?php esc_attr_e('Liên hệ nhanh', 'alpha-edu'); ?>">
+        <?php foreach ($buttons as $button) : ?>
+            <?php
+            $url   = $button['url'] ?? '';
+            $key   = sanitize_html_class($button['key'] ?? 'contact');
+            $icon  = $button['icon'] ?? $key;
+            $label = $button['label'] ?? '';
+
+            if (! $url || ! $label) {
+                continue;
+            }
+            ?>
+            <a class="floating-contact-button floating-contact-<?php echo esc_attr($key); ?>" href="<?php echo esc_url($url); ?>" aria-label="<?php echo esc_attr($label); ?>"<?php echo 0 === strpos($url, 'http') ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>>
+                <span class="floating-contact-icon" aria-hidden="true">
+                    <?php if ('phone' === $icon) : ?>
+                        <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M7.1 2.9 4.6 4.1c-.9.4-1.5 1.4-1.4 2.4.6 7.5 6.8 13.7 14.3 14.3 1 .1 2-.5 2.4-1.4l1.2-2.5c.3-.6.1-1.4-.5-1.8l-3.4-2.2c-.6-.4-1.3-.3-1.8.2l-1.4 1.4a11.4 11.4 0 0 1-4.5-4.5l1.4-1.4c.5-.5.6-1.2.2-1.8L8.9 3.4c-.4-.6-1.2-.8-1.8-.5z"/>
+                        </svg>
+                    <?php elseif ('zalo' === $icon) : ?>
+                        <span class="floating-contact-zalo-text">Zalo</span>
+                    <?php else : ?>
+                        <span class="floating-contact-facebook-text">f</span>
+                    <?php endif; ?>
+                </span>
+            </a>
+        <?php endforeach; ?>
+    </nav>
+    <?php
+}
+add_action('wp_footer', 'alpha_edu_render_floating_contact_buttons');
 
 function alpha_edu_enqueue_notice_images_admin_assets($hook_suffix) {
     if (! in_array($hook_suffix, ['post.php', 'post-new.php'], true)) {
