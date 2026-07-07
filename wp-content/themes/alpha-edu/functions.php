@@ -494,15 +494,13 @@ function alpha_edu_inject_featured_news_block($html) {
         return $html;
     }
 
-    foreach (['<section class="home-courses', '<section class="home-stats', '<section class="home-testimonials', '</main>'] as $marker) {
-        $position = strpos($html, $marker);
+    $position = strrpos($html, '</main>');
 
-        if (false !== $position) {
-            return substr_replace($html, $featured_news, $position, 0);
-        }
+    if (false === $position) {
+        return $html;
     }
 
-    return $html;
+    return substr_replace($html, $featured_news, $position, 0);
 }
 
 function alpha_edu_render_floating_contact_buttons() {
