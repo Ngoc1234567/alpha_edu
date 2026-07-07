@@ -218,6 +218,15 @@ function alpha_edu_register_notice_images_meta_box() {
         'side',
         'default'
     );
+
+    add_meta_box(
+        'alpha-notice-featured',
+        __('Tin tức nổi bật', 'alpha-edu'),
+        'alpha_edu_render_notice_featured_meta_box',
+        'alpha_notice',
+        'side',
+        'high'
+    );
 }
 add_action('add_meta_boxes', 'alpha_edu_register_notice_images_meta_box');
 
@@ -250,6 +259,19 @@ function alpha_edu_get_notice_images($post_id, $size = 'medium_large') {
     return $images;
 }
 
+function alpha_edu_get_notice_primary_image($post_id, $size = 'large') {
+    if (has_post_thumbnail($post_id)) {
+        return [
+            'url' => get_the_post_thumbnail_url($post_id, $size),
+            'alt' => get_post_meta(get_post_thumbnail_id($post_id), '_wp_attachment_image_alt', true),
+        ];
+    }
+
+    $images = alpha_edu_get_notice_images($post_id, $size);
+
+    return $images[0] ?? null;
+}
+
 function alpha_edu_render_notice_images_meta_box($post) {
     $image_ids = alpha_edu_get_notice_image_ids($post->ID);
 
@@ -272,7 +294,21 @@ function alpha_edu_render_notice_images_meta_box($post) {
     <?php
 }
 
-function alpha_edu_save_notice_images($post_id) {
+function alpha_edu_render_notice_featured_meta_box($post) {
+    $is_featured = (bool) get_post_meta($post->ID, '_alpha_notice_featured', true);
+
+    wp_nonce_field('alpha_notice_featured', 'alpha_notice_featured_nonce');
+    ?>
+    <p>
+        <label>
+            <input type="checkbox" name="alpha_notice_featured" value="1" <?php checked($is_featured); ?>>
+            <?php esc_html_e('Hiển thị thông báo này trong khối tin tức nổi bật ở trang chủ.', 'alpha-edu'); ?>
+        </label>
+    </p>
+    <?php
+}
+
+function alpha_edu_save_notice_meta($post_id) {
     if (
         ! isset($_POST['alpha_notice_images_nonce'])
         || ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['alpha_notice_images_nonce'])), 'alpha_notice_images')
@@ -296,8 +332,175 @@ function alpha_edu_save_notice_images($post_id) {
     } else {
         delete_post_meta($post_id, '_alpha_notice_images');
     }
+
+    if (
+        isset($_POST['alpha_notice_featured_nonce'])
+        && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['alpha_notice_featured_nonce'])), 'alpha_notice_featured')
+    ) {
+        $is_featured = isset($_POST['alpha_notice_featured']) ? '1' : '';
+
+        if ($is_featured) {
+            update_post_meta($post_id, '_alpha_notice_featured', '1');
+        } else {
+            delete_post_meta($post_id, '_alpha_notice_featured');
+        }
+    }
 }
-add_action('save_post_alpha_notice', 'alpha_edu_save_notice_images');
+add_action('save_post_alpha_notice', 'alpha_edu_save_notice_meta');
+
+function alpha_edu_notice_admin_columns($columns) {
+    $new_columns = [];
+
+    foreach ($columns as $key => $label) {
+        if ('date' === $key) {
+            $new_columns['alpha_notice_featured'] = __('Nổi bật', 'alpha-edu');
+        }
+
+        $new_columns[$key] = $label;
+    }
+
+    return $new_columns;
+}
+add_filter('manage_alpha_notice_posts_columns', 'alpha_edu_notice_admin_columns');
+
+function alpha_edu_notice_admin_column_content($column, $post_id) {
+    if ('alpha_notice_featured' !== $column) {
+        return;
+    }
+
+    echo get_post_meta($post_id, '_alpha_notice_featured', true) ? esc_html__('Có', 'alpha-edu') : '<span aria-hidden="true">-</span>';
+}
+add_action('manage_alpha_notice_posts_custom_column', 'alpha_edu_notice_admin_column_content', 10, 2);
+
+function alpha_edu_get_featured_notice_query() {
+    return new WP_Query([
+        'post_type'      => 'alpha_notice',
+        'post_status'    => 'publish',
+        'posts_per_page' => 5,
+        'meta_key'       => '_alpha_notice_featured',
+        'meta_value'     => '1',
+        'orderby'        => [
+            'menu_order' => 'ASC',
+            'date'       => 'DESC',
+        ],
+    ]);
+}
+
+function alpha_edu_render_featured_news_block() {
+    $featured_notices = alpha_edu_get_featured_notice_query();
+
+    if (! $featured_notices->have_posts()) {
+        wp_reset_postdata();
+        return '';
+    }
+
+    $notice_count = (int) $featured_notices->post_count;
+
+    ob_start();
+    ?>
+    <section class="home-featured-news section-padding" aria-labelledby="featured-news-title">
+        <div class="container featured-news-container">
+            <header class="featured-news-header">
+                <h2 id="featured-news-title"><span><?php esc_html_e('TIN TỨC', 'alpha-edu'); ?></span><strong><?php esc_html_e('NỔI BẬT', 'alpha-edu'); ?></strong></h2>
+            </header>
+
+            <div class="featured-news-grid<?php echo $notice_count > 1 ? '' : ' featured-news-grid-single'; ?>">
+                <?php
+                $index = 0;
+                while ($featured_notices->have_posts()) :
+                    $featured_notices->the_post();
+                    $notice_image = alpha_edu_get_notice_primary_image(get_the_ID(), 0 === $index ? 'large' : 'medium_large');
+                    ?>
+                    <?php if (0 === $index) : ?>
+                        <article <?php post_class('featured-news-main'); ?>>
+                            <a href="<?php the_permalink(); ?>" class="featured-news-main-link">
+                                <figure class="featured-news-main-media">
+                                    <?php if ($notice_image) : ?>
+                                        <img src="<?php echo esc_url($notice_image['url']); ?>" alt="<?php echo esc_attr($notice_image['alt'] ?: get_the_title()); ?>">
+                                    <?php endif; ?>
+                                </figure>
+                                <h3><?php the_title(); ?></h3>
+                            </a>
+                        </article>
+
+                        <?php if ($notice_count > 1) : ?>
+                            <div class="featured-news-side">
+                        <?php endif; ?>
+                    <?php else : ?>
+                        <article <?php post_class('featured-news-item'); ?>>
+                            <a href="<?php the_permalink(); ?>">
+                                <figure class="featured-news-item-media">
+                                    <?php if ($notice_image) : ?>
+                                        <img src="<?php echo esc_url($notice_image['url']); ?>" alt="<?php echo esc_attr($notice_image['alt'] ?: get_the_title()); ?>">
+                                    <?php endif; ?>
+                                </figure>
+                                <h3><?php the_title(); ?></h3>
+                            </a>
+                        </article>
+                    <?php endif; ?>
+                    <?php
+                    $index++;
+                endwhile;
+                ?>
+                <?php if ($notice_count > 1) : ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </section>
+    <?php
+    wp_reset_postdata();
+
+    return ob_get_clean();
+}
+
+function alpha_edu_should_inject_featured_news() {
+    return ! is_admin() && is_page_template('page-templates/template-home.php');
+}
+
+function alpha_edu_start_featured_news_buffer() {
+    if (! alpha_edu_should_inject_featured_news()) {
+        return;
+    }
+
+    $GLOBALS['alpha_edu_featured_news_buffer_level'] = ob_get_level() + 1;
+    ob_start();
+    add_action('shutdown', 'alpha_edu_flush_featured_news_buffer', 0);
+}
+add_action('template_redirect', 'alpha_edu_start_featured_news_buffer');
+
+function alpha_edu_flush_featured_news_buffer() {
+    $buffer_level = $GLOBALS['alpha_edu_featured_news_buffer_level'] ?? 0;
+
+    if (! $buffer_level || ob_get_level() < $buffer_level) {
+        return;
+    }
+
+    $html = ob_get_clean();
+    echo alpha_edu_inject_featured_news_block($html);
+}
+
+function alpha_edu_inject_featured_news_block($html) {
+    if (false !== strpos($html, 'home-featured-news')) {
+        return $html;
+    }
+
+    $featured_news = alpha_edu_render_featured_news_block();
+
+    if ('' === $featured_news) {
+        return $html;
+    }
+
+    foreach (['<section class="home-courses', '<section class="home-stats', '<section class="home-testimonials', '</main>'] as $marker) {
+        $position = strpos($html, $marker);
+
+        if (false !== $position) {
+            return substr_replace($html, $featured_news, $position, 0);
+        }
+    }
+
+    return $html;
+}
 
 function alpha_edu_enqueue_notice_images_admin_assets($hook_suffix) {
     if (! in_array($hook_suffix, ['post.php', 'post-new.php'], true)) {
