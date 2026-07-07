@@ -437,11 +437,10 @@ a {
 .floating-contact {
     position: fixed;
     right: 18px;
-    top: 50%;
+    bottom: 28px;
     z-index: 120;
     display: grid;
     gap: 14px;
-    transform: translateY(-50%);
 }
 
 .floating-contact-button {
@@ -3134,6 +3133,7 @@ a {
 @media (max-width: 860px) {
     .floating-contact {
         right: 12px;
+        bottom: 22px;
         gap: 11px;
     }
 
@@ -3159,6 +3159,7 @@ a {
 @media (max-width: 520px) {
     .floating-contact {
         right: 10px;
+        bottom: 18px;
         gap: 10px;
     }
 
