@@ -1717,7 +1717,7 @@ function alpha_edu_match_exam_column($header) {
         'year'     => ['nam', 'year'],
         'course'   => ['khoa_thi', 'khoa', 'dot_thi', 'ky_thi', 'course', 'exam'],
         'cccd'     => ['cccd', 'so_cccd', 'cmnd', 'so_cmnd', 'can_cuoc', 'can_cuoc_cong_dan'],
-        'sbd'      => ['sbd', 'so_bao_danh', 'ma_du_thi'],
+        'student_name' => ['ho_va_ten', 'ho_ten', 'hoc_vien', 'ten_hoc_vien', 'ho_ten_hoc_vien', 'ten_hv'],
         'theory'   => ['diem_ly_thuyet', 'ly_thuyet', 'diem_lt', 'lt'],
         'practice' => ['diem_thuc_hanh', 'thuc_hanh', 'diem_th', 'th'],
         'result'   => ['ket_qua_thi', 'ket_qua', 'kq'],
@@ -1849,7 +1849,7 @@ function alpha_edu_build_exam_results_from_rows($rows) {
             'year'     => $year,
             'course'   => $course,
             'cccd'     => alpha_edu_clean_exam_cell($row[$column_map['cccd']] ?? ''),
-            'sbd'      => isset($column_map['sbd']) ? alpha_edu_clean_exam_cell($row[$column_map['sbd']] ?? '') : '',
+            'student_name' => isset($column_map['student_name']) ? alpha_edu_clean_exam_cell($row[$column_map['student_name']] ?? '') : '',
             'theory'   => alpha_edu_format_exam_score($row[$column_map['theory']] ?? ''),
             'practice' => alpha_edu_format_exam_score($row[$column_map['practice']] ?? ''),
             'result'   => alpha_edu_clean_exam_cell($row[$column_map['result']] ?? ''),
@@ -2174,7 +2174,7 @@ function alpha_edu_handle_exam_results_save_rows() {
             'year'     => alpha_edu_clean_exam_cell($row['year'] ?? ''),
             'course'   => alpha_edu_clean_exam_cell($row['course'] ?? ''),
             'cccd'     => alpha_edu_clean_exam_cell($row['cccd'] ?? ''),
-            'sbd'      => alpha_edu_clean_exam_cell($row['sbd'] ?? ''),
+            'student_name' => alpha_edu_clean_exam_cell($row['student_name'] ?? ''),
             'theory'   => alpha_edu_format_exam_score($row['theory'] ?? ''),
             'practice' => alpha_edu_format_exam_score($row['practice'] ?? ''),
             'result'   => alpha_edu_clean_exam_cell($row['result'] ?? ''),
@@ -2223,7 +2223,7 @@ function alpha_edu_render_exam_results_admin_page() {
             $row['year'] ?? '',
             $row['course'] ?? '',
             $row['cccd'] ?? '',
-            $row['sbd'] ?? '',
+            $row['student_name'] ?? '',
             $row['theory'] ?? '',
             $row['practice'] ?? '',
             $row['result'] ?? '',
@@ -2363,7 +2363,7 @@ function alpha_edu_render_exam_results_admin_page() {
             <input type="hidden" name="action" value="alpha_edu_upload_exam_results">
 
             <h2 style="margin-top:0;"><?php esc_html_e('Upload file điểm', 'alpha-edu'); ?></h2>
-            <p><?php esc_html_e('Hỗ trợ file mẫu có tiêu đề khóa thi ở đầu file và bảng gồm CCCD, LT, TH, Kết quả. Nếu file có thêm Năm, Khóa thi, SBD, Ghi chú thì hệ thống cũng tự nhận.', 'alpha-edu'); ?></p>
+            <p><?php esc_html_e('Hỗ trợ file mẫu có tiêu đề khóa thi ở đầu file và bảng gồm CCCD, LT, TH, Kết quả. Nếu file có thêm Năm, Khóa thi, Họ và tên, Ghi chú thì hệ thống cũng tự nhận.', 'alpha-edu'); ?></p>
             <p><input type="file" name="alpha_exam_results_file" accept=".xlsx,.csv" required></p>
             <?php submit_button(__('Cập nhật kết quả thi', 'alpha-edu')); ?>
         </form>
@@ -2385,7 +2385,7 @@ function alpha_edu_render_exam_results_admin_page() {
                 <form class="alpha-exam-search" method="get" action="<?php echo esc_url(admin_url('admin.php')); ?>">
                     <input type="hidden" name="page" value="alpha-edu-exam-results">
                     <label for="alpha-exam-search" class="screen-reader-text"><?php esc_html_e('Tìm kiếm kết quả thi', 'alpha-edu'); ?></label>
-                    <input id="alpha-exam-search" type="search" name="alpha_exam_search" value="<?php echo esc_attr($search); ?>" placeholder="<?php echo esc_attr__('Tìm theo năm, khóa thi, CCCD, SBD, kết quả...', 'alpha-edu'); ?>">
+                    <input id="alpha-exam-search" type="search" name="alpha_exam_search" value="<?php echo esc_attr($search); ?>" placeholder="<?php echo esc_attr__('Tìm theo năm, khóa thi, CCCD, học viên, kết quả...', 'alpha-edu'); ?>">
                     <?php submit_button(__('Tìm kiếm', 'alpha-edu'), 'secondary', '', false); ?>
                     <?php if ('' !== $search) : ?>
                         <a class="button" href="<?php echo esc_url(admin_url('admin.php?page=alpha-edu-exam-results')); ?>"><?php esc_html_e('Xóa tìm kiếm', 'alpha-edu'); ?></a>
@@ -2422,7 +2422,7 @@ function alpha_edu_render_exam_results_admin_page() {
                                 <th style="width:84px;"><?php esc_html_e('Năm', 'alpha-edu'); ?></th>
                                 <th style="width:360px;"><?php esc_html_e('Khóa thi', 'alpha-edu'); ?></th>
                                 <th style="width:170px;"><?php esc_html_e('CCCD', 'alpha-edu'); ?></th>
-                                <th style="width:160px;"><?php esc_html_e('SBD', 'alpha-edu'); ?></th>
+                                <th style="width:220px;"><?php esc_html_e('Học viên', 'alpha-edu'); ?></th>
                                 <th style="width:120px;"><?php esc_html_e('Lý thuyết', 'alpha-edu'); ?></th>
                                 <th style="width:120px;"><?php esc_html_e('Thực hành', 'alpha-edu'); ?></th>
                                 <th style="width:140px;"><?php esc_html_e('Kết quả', 'alpha-edu'); ?></th>
@@ -2436,7 +2436,7 @@ function alpha_edu_render_exam_results_admin_page() {
                                     <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][year]" value="<?php echo esc_attr($row['year']); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][course]" value="<?php echo esc_attr($row['course']); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][cccd]" value="<?php echo esc_attr($row['cccd']); ?>" style="width:100%;"></td>
-                                    <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][sbd]" value="<?php echo esc_attr($row['sbd']); ?>" style="width:100%;"></td>
+                                    <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][student_name]" value="<?php echo esc_attr($row['student_name'] ?? ''); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][theory]" value="<?php echo esc_attr($row['theory']); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][practice]" value="<?php echo esc_attr($row['practice']); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_exam_rows[<?php echo esc_attr($index); ?>][result]" value="<?php echo esc_attr($row['result']); ?>" style="width:100%;"></td>

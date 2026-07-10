@@ -116,6 +116,7 @@ if ($has_searched && function_exists('alpha_edu_lookup_exam_results')) {
                 <table class="score-result-table">
                     <thead>
                         <tr>
+                            <th>Học viên</th>
                             <th>CCCD</th>
                             <th>Kết quả tra cứu</th>
                             <th>Ghi chú</th>
@@ -135,6 +136,7 @@ if ($has_searched && function_exists('alpha_edu_lookup_exam_results')) {
                             }
                             ?>
                             <tr>
+                                <td><?php echo esc_html(('' !== ($row['student_name'] ?? '')) ? $row['student_name'] : '-'); ?></td>
                                 <td><?php echo esc_html($row['cccd']); ?></td>
                                 <td>
                                     <span>- Điểm lý thuyết: <strong><?php echo esc_html($row['theory'] ?: '-'); ?></strong></span>
