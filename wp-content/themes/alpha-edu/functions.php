@@ -2078,6 +2078,37 @@ function alpha_edu_register_exam_results_admin_page() {
 }
 add_action('admin_menu', 'alpha_edu_register_exam_results_admin_page');
 
+function alpha_edu_exam_result_key($row) {
+    return implode('|', [
+        $row['year'] ?? '',
+        $row['course'] ?? '',
+        preg_replace('/\D+/', '', (string) ($row['cccd'] ?? '')),
+    ]);
+}
+
+function alpha_edu_merge_exam_results($existing_rows, $new_rows) {
+    $merged = [];
+    $key_index = [];
+
+    foreach ($existing_rows as $row) {
+        $key_index[alpha_edu_exam_result_key($row)] = count($merged);
+        $merged[] = $row;
+    }
+
+    foreach ($new_rows as $row) {
+        $key = alpha_edu_exam_result_key($row);
+
+        if (isset($key_index[$key])) {
+            $merged[$key_index[$key]] = $row;
+        } else {
+            $key_index[$key] = count($merged);
+            $merged[] = $row;
+        }
+    }
+
+    return $merged;
+}
+
 function alpha_edu_handle_exam_results_upload() {
     if (! current_user_can('manage_options')) {
         wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'alpha-edu'));
@@ -2108,8 +2139,10 @@ function alpha_edu_handle_exam_results_upload() {
         exit;
     }
 
+    $existing_data = alpha_edu_get_exam_results_data();
+
     update_option('alpha_edu_exam_results_data', [
-        'rows'        => $rows,
+        'rows'        => alpha_edu_merge_exam_results($existing_data['rows'], $rows),
         'filename'    => sanitize_file_name($file['name']),
         'imported_at' => current_time('mysql'),
     ], false);
