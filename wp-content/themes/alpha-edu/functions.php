@@ -1718,6 +1718,8 @@ function alpha_edu_match_exam_column($header) {
         'course'   => ['khoa_thi', 'khoa', 'dot_thi', 'ky_thi', 'course', 'exam'],
         'cccd'     => ['cccd', 'so_cccd', 'cmnd', 'so_cmnd', 'can_cuoc', 'can_cuoc_cong_dan'],
         'student_name' => ['ho_va_ten', 'ho_ten', 'hoc_vien', 'ten_hoc_vien', 'ho_ten_hoc_vien', 'ten_hv'],
+        'last_name' => ['ho_va_ten_dem', 'ho_ten_dem', 'ho_dem', 'ho'],
+        'first_name' => ['ten'],
         'theory'   => ['diem_ly_thuyet', 'ly_thuyet', 'diem_lt', 'lt'],
         'practice' => ['diem_thuc_hanh', 'thuc_hanh', 'diem_th', 'th'],
         'result'   => ['ket_qua_thi', 'ket_qua', 'kq'],
@@ -1817,6 +1819,15 @@ function alpha_edu_build_exam_column_map($header_row, $subheader_row = []) {
         }
     }
 
+    if (isset($column_map['student_name']) && ! isset($column_map['last_name']) && ! isset($column_map['first_name'])) {
+        $next_index = $column_map['student_name'] + 1;
+        $next_header = trim((string) ($header_row[$next_index] ?? ''));
+
+        if ('' === $next_header && ! in_array($next_index, $column_map, true)) {
+            $column_map['student_name_ext'] = $next_index;
+        }
+    }
+
     return $column_map;
 }
 
@@ -1845,11 +1856,25 @@ function alpha_edu_build_exam_results_from_rows($rows) {
     foreach (array_slice($rows, $header_index + 1) as $row) {
         $year = isset($column_map['year']) ? alpha_edu_clean_exam_cell($row[$column_map['year']] ?? '') : $meta['year'];
         $course = isset($column_map['course']) ? alpha_edu_clean_exam_cell($row[$column_map['course']] ?? '') : $meta['course'];
+
+        if (isset($column_map['student_name'])) {
+            $student_name = alpha_edu_clean_exam_cell($row[$column_map['student_name']] ?? '');
+
+            if (isset($column_map['student_name_ext'])) {
+                $student_name_ext = alpha_edu_clean_exam_cell($row[$column_map['student_name_ext']] ?? '');
+                $student_name = trim($student_name . ' ' . $student_name_ext);
+            }
+        } else {
+            $last_name = isset($column_map['last_name']) ? alpha_edu_clean_exam_cell($row[$column_map['last_name']] ?? '') : '';
+            $first_name = isset($column_map['first_name']) ? alpha_edu_clean_exam_cell($row[$column_map['first_name']] ?? '') : '';
+            $student_name = trim($last_name . ' ' . $first_name);
+        }
+
         $item = [
             'year'     => $year,
             'course'   => $course,
             'cccd'     => alpha_edu_clean_exam_cell($row[$column_map['cccd']] ?? ''),
-            'student_name' => isset($column_map['student_name']) ? alpha_edu_clean_exam_cell($row[$column_map['student_name']] ?? '') : '',
+            'student_name' => $student_name,
             'theory'   => alpha_edu_format_exam_score($row[$column_map['theory']] ?? ''),
             'practice' => alpha_edu_format_exam_score($row[$column_map['practice']] ?? ''),
             'result'   => alpha_edu_clean_exam_cell($row[$column_map['result']] ?? ''),
@@ -2363,7 +2388,7 @@ function alpha_edu_render_exam_results_admin_page() {
             <input type="hidden" name="action" value="alpha_edu_upload_exam_results">
 
             <h2 style="margin-top:0;"><?php esc_html_e('Upload file điểm', 'alpha-edu'); ?></h2>
-            <p><?php esc_html_e('Hỗ trợ file mẫu có tiêu đề khóa thi ở đầu file và bảng gồm CCCD, LT, TH, Kết quả. Nếu file có thêm Năm, Khóa thi, Họ và tên, Ghi chú thì hệ thống cũng tự nhận.', 'alpha-edu'); ?></p>
+            <p><?php esc_html_e('Hỗ trợ file mẫu có tiêu đề khóa thi ở đầu file và bảng gồm CCCD, LT, TH, Kết quả. Nếu file có thêm Năm, Khóa thi, Ghi chú thì hệ thống cũng tự nhận. Cột họ tên có thể là 1 cột "Họ và tên" hoặc 2 cột tách riêng "Họ và tên đệm" + "Tên" — hệ thống sẽ tự ghép lại.', 'alpha-edu'); ?></p>
             <p><input type="file" name="alpha_exam_results_file" accept=".xlsx,.csv" required></p>
             <?php submit_button(__('Cập nhật kết quả thi', 'alpha-edu')); ?>
         </form>
