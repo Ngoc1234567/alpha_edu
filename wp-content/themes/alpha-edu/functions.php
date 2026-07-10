@@ -785,44 +785,88 @@ function alpha_edu_get_registration_exam_schedules() {
     return $items;
 }
 
+function alpha_edu_registration_option_defaults() {
+    return [
+        'programs_hoc' => "Tiếng Anh\nTin học\nTiếng Trung",
+        'programs_thi' => 'Tin học',
+        'courses_hoc' => <<<'TXT'
+Tiếng Anh :: B1 VSTEP, B1 VSTEP (Tự do), A2 - B1 Aptis (Đào tạo), B2 Aptis (Đào tạo), B1 Aptis (Cấp tốc), B2 Aptis (Cấp tốc), A2 - B1 VEPT (Đào tạo), A2 VEPT (Cấp tốc), B1 VEPT (Cấp tốc), Học Viên An Ninh, B1 Chứng nhận ĐHNN Huế (Cấp tốc), B2 Chứng nhận ĐHNN Huế (Cấp tốc), B1 Chứng nhận ĐHNN Huế (Dài hạn)
+Tin học :: CNTT Cơ Bản, CNTT Nâng Cao
+Tiếng Trung :: HSK 1, HSK 2, HSK 3
+TXT,
+        'courses_thi' => 'Tin học :: CNTT Cơ Bản, CNTT Nâng Cao',
+        'schedules_hoc' => <<<'TXT'
+Thứ 2,4,6 17h30
+Thứ 3,5,7, 17h30
+Thứ 2,4,6 19h00
+Thứ 3,5,7 19H00
+Khác (Vui lòng liên hệ trực tiếp ở fanpage để được hỗ trợ)
+TXT,
+    ];
+}
+
+function alpha_edu_parse_registration_lines($option_name, $default_text) {
+    $value = get_option($option_name, '');
+    $value = ('' !== trim((string) $value)) ? $value : $default_text;
+    $lines = preg_split('/\r\n|\r|\n/', (string) $value);
+    $items = [];
+
+    foreach ($lines as $line) {
+        $line = trim($line);
+
+        if ('' !== $line) {
+            $items[] = $line;
+        }
+    }
+
+    return $items;
+}
+
+function alpha_edu_parse_registration_courses($option_name, $default_text) {
+    $value = get_option($option_name, '');
+    $value = ('' !== trim((string) $value)) ? $value : $default_text;
+    $lines = preg_split('/\r\n|\r|\n/', (string) $value);
+    $result = [];
+
+    foreach ($lines as $line) {
+        $line = trim($line);
+
+        if ('' === $line || false === strpos($line, '::')) {
+            continue;
+        }
+
+        list($program, $courses_text) = array_map('trim', explode('::', $line, 2));
+
+        if ('' === $program) {
+            continue;
+        }
+
+        $courses = array_values(array_filter(array_map('trim', explode(',', $courses_text)), function ($course) {
+            return '' !== $course;
+        }));
+
+        if ($courses) {
+            $result[$program] = $courses;
+        }
+    }
+
+    return $result;
+}
+
 function alpha_edu_registration_options() {
+    $defaults = alpha_edu_registration_option_defaults();
+
     return [
         'programs' => [
-            'Đăng ký học' => ['Tiếng Anh', 'Tin học', 'Tiếng Trung'],
-            'Đăng ký thi' => ['Tin học'],
+            'Đăng ký học' => alpha_edu_parse_registration_lines('alpha_registration_programs_hoc', $defaults['programs_hoc']),
+            'Đăng ký thi' => alpha_edu_parse_registration_lines('alpha_registration_programs_thi', $defaults['programs_thi']),
         ],
         'courses' => [
-            'Đăng ký học' => [
-                'Tiếng Anh' => [
-                    'B1 VSTEP',
-                    'B1 VSTEP (Tự do)',
-                    'A2 - B1 Aptis (Đào tạo)',
-                    'B2 Aptis (Đào tạo)',
-                    'B1 Aptis (Cấp tốc)',
-                    'B2 Aptis (Cấp tốc)',
-                    'A2 - B1 VEPT (Đào tạo)',
-                    'A2 VEPT (Cấp tốc)',
-                    'B1 VEPT (Cấp tốc)',
-                    'Học Viên An Ninh',
-                    'B1 Chứng nhận ĐHNN Huế (Cấp tốc)',
-                    'B2 Chứng nhận ĐHNN Huế (Cấp tốc)',
-                    'B1 Chứng nhận ĐHNN Huế (Dài hạn)',
-                ],
-                'Tin học' => ['CNTT Cơ Bản', 'CNTT Nâng Cao'],
-                'Tiếng Trung' => ['HSK 1', 'HSK 2', 'HSK 3'],
-            ],
-            'Đăng ký thi' => [
-                'Tin học' => ['CNTT Cơ Bản', 'CNTT Nâng Cao'],
-            ],
+            'Đăng ký học' => alpha_edu_parse_registration_courses('alpha_registration_courses_hoc', $defaults['courses_hoc']),
+            'Đăng ký thi' => alpha_edu_parse_registration_courses('alpha_registration_courses_thi', $defaults['courses_thi']),
         ],
         'schedules' => [
-            'Đăng ký học' => [
-                'Thứ 2,4,6 17h30',
-                'Thứ 3,5,7, 17h30',
-                'Thứ 2,4,6 19h00',
-                'Thứ 3,5,7 19H00',
-                'Khác (Vui lòng liên hệ trực tiếp ở fanpage để được hỗ trợ)',
-            ],
+            'Đăng ký học' => alpha_edu_parse_registration_lines('alpha_registration_schedules_hoc', $defaults['schedules_hoc']),
             'Đăng ký thi' => alpha_edu_get_registration_exam_schedules(),
         ],
         'placeholders' => [
@@ -1107,11 +1151,22 @@ function alpha_edu_register_registration_settings() {
         'default'           => '',
     ]);
 
-    register_setting('alpha_registration_settings', 'alpha_registration_exam_schedules', [
-        'type'              => 'string',
-        'sanitize_callback' => 'sanitize_textarea_field',
-        'default'           => '',
-    ]);
+    $textarea_options = [
+        'alpha_registration_exam_schedules',
+        'alpha_registration_programs_hoc',
+        'alpha_registration_programs_thi',
+        'alpha_registration_courses_hoc',
+        'alpha_registration_courses_thi',
+        'alpha_registration_schedules_hoc',
+    ];
+
+    foreach ($textarea_options as $option_name) {
+        register_setting('alpha_registration_settings', $option_name, [
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_textarea_field',
+            'default'           => '',
+        ]);
+    }
 }
 add_action('admin_init', 'alpha_edu_register_registration_settings');
 
@@ -1130,6 +1185,7 @@ function alpha_edu_register_registration_settings_page() {
 add_action('admin_menu', 'alpha_edu_register_registration_settings_page', 20);
 
 function alpha_edu_render_registration_settings_page() {
+    $defaults = alpha_edu_registration_option_defaults();
     ?>
     <div class="wrap">
         <h1><?php esc_html_e('Cài đặt form đăng ký', 'alpha-edu'); ?></h1>
@@ -1144,6 +1200,59 @@ function alpha_edu_render_registration_settings_page() {
                     <td>
                         <input id="alpha-registration-cf7-shortcode" class="regular-text" type="text" name="alpha_registration_cf7_shortcode" value="<?php echo esc_attr(get_option('alpha_registration_cf7_shortcode', '')); ?>" placeholder='[contact-form-7 id="123" title="Form đăng ký học/thi"]'>
                         <p class="description"><?php esc_html_e('Có thể nhập riêng shortcode trong từng khóa học. Nếu cả hai nơi đều trống, hệ thống tự lấy form CF7 có chữ “đăng ký” hoặc form đầu tiên.', 'alpha-edu'); ?></p>
+                    </td>
+                </tr>
+            </table>
+
+            <h2><?php esc_html_e('Tùy chọn cho "Đăng ký học"', 'alpha-edu'); ?></h2>
+            <table class="form-table" role="presentation">
+                <tr>
+                    <th scope="row">
+                        <label for="alpha-registration-programs-hoc"><?php esc_html_e('Chương trình', 'alpha-edu'); ?></label>
+                    </th>
+                    <td>
+                        <textarea id="alpha-registration-programs-hoc" class="large-text" rows="4" name="alpha_registration_programs_hoc"><?php echo esc_textarea(get_option('alpha_registration_programs_hoc', $defaults['programs_hoc'])); ?></textarea>
+                        <p class="description"><?php esc_html_e('Mỗi dòng là một chương trình hiển thị khi chọn Hình thức = Đăng ký học.', 'alpha-edu'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="alpha-registration-courses-hoc"><?php esc_html_e('Khóa đăng ký theo chương trình', 'alpha-edu'); ?></label>
+                    </th>
+                    <td>
+                        <textarea id="alpha-registration-courses-hoc" class="large-text code" rows="8" name="alpha_registration_courses_hoc"><?php echo esc_textarea(get_option('alpha_registration_courses_hoc', $defaults['courses_hoc'])); ?></textarea>
+                        <p class="description"><?php esc_html_e('Mỗi dòng một chương trình, theo định dạng: Tên chương trình :: Khóa 1, Khóa 2, Khóa 3 (phải trùng tên với các chương trình ở trên).', 'alpha-edu'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="alpha-registration-schedules-hoc"><?php esc_html_e('Lịch học', 'alpha-edu'); ?></label>
+                    </th>
+                    <td>
+                        <textarea id="alpha-registration-schedules-hoc" class="large-text" rows="6" name="alpha_registration_schedules_hoc"><?php echo esc_textarea(get_option('alpha_registration_schedules_hoc', $defaults['schedules_hoc'])); ?></textarea>
+                        <p class="description"><?php esc_html_e('Mỗi dòng là một lịch học để học viên chọn khi chọn Hình thức = Đăng ký học.', 'alpha-edu'); ?></p>
+                    </td>
+                </tr>
+            </table>
+
+            <h2><?php esc_html_e('Tùy chọn cho "Đăng ký thi"', 'alpha-edu'); ?></h2>
+            <table class="form-table" role="presentation">
+                <tr>
+                    <th scope="row">
+                        <label for="alpha-registration-programs-thi"><?php esc_html_e('Chương trình', 'alpha-edu'); ?></label>
+                    </th>
+                    <td>
+                        <textarea id="alpha-registration-programs-thi" class="large-text" rows="3" name="alpha_registration_programs_thi"><?php echo esc_textarea(get_option('alpha_registration_programs_thi', $defaults['programs_thi'])); ?></textarea>
+                        <p class="description"><?php esc_html_e('Mỗi dòng là một chương trình hiển thị khi chọn Hình thức = Đăng ký thi.', 'alpha-edu'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">
+                        <label for="alpha-registration-courses-thi"><?php esc_html_e('Khóa đăng ký theo chương trình', 'alpha-edu'); ?></label>
+                    </th>
+                    <td>
+                        <textarea id="alpha-registration-courses-thi" class="large-text code" rows="4" name="alpha_registration_courses_thi"><?php echo esc_textarea(get_option('alpha_registration_courses_thi', $defaults['courses_thi'])); ?></textarea>
+                        <p class="description"><?php esc_html_e('Mỗi dòng một chương trình, theo định dạng: Tên chương trình :: Khóa 1, Khóa 2, Khóa 3 (phải trùng tên với các chương trình ở trên).', 'alpha-edu'); ?></p>
                     </td>
                 </tr>
                 <tr>
