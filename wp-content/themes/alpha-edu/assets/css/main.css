@@ -1727,22 +1727,26 @@ a {
 }
 
 .score-result-table th:nth-child(1) {
-    width: 28%;
+    width: 16%;
 }
 
 .score-result-table th:nth-child(2) {
-    width: 48%;
+    width: 20%;
 }
 
 .score-result-table th:nth-child(3) {
-    width: 24%;
+    width: 42%;
 }
 
-.score-result-table td:nth-child(2) {
+.score-result-table th:nth-child(4) {
+    width: 22%;
+}
+
+.score-result-table td:nth-child(3) {
     text-align: left;
 }
 
-.score-result-table td:nth-child(2) span {
+.score-result-table td:nth-child(3) span {
     display: block;
 }
 
@@ -2601,7 +2605,7 @@ a {
     }
 
     .score-result-table {
-        min-width: 860px;
+        min-width: 980px;
         font-size: 17px;
     }
 
@@ -2999,7 +3003,7 @@ a {
     }
 
     .score-result-table {
-        min-width: 760px;
+        min-width: 860px;
         font-size: 15px;
     }
 
