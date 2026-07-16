@@ -421,6 +421,9 @@ a {
 .testimonial-swiper .swiper-pagination {
     position: static;
     margin-top: 26px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
 }
 
 .testimonial-swiper .swiper-pagination-bullet {
