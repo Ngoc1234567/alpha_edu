@@ -26,7 +26,25 @@
                 },
                 pagination: {
                     el: '.testimonial-swiper .swiper-pagination',
-                    clickable: true
+                    type: 'custom',
+                    renderCustom: function (swiper, current, total) {
+                        var dotCount = Math.min(3, total);
+                        var activeDot = Math.min(
+                            dotCount - 1,
+                            Math.floor((current - 1) * dotCount / total)
+                        );
+                        var dots = [];
+
+                        for (var i = 0; i < dotCount; i++) {
+                            dots.push(
+                                '<span class="swiper-pagination-bullet'
+                                + (i === activeDot ? ' swiper-pagination-bullet-active' : '')
+                                + '" aria-hidden="true"></span>'
+                            );
+                        }
+
+                        return dots.join('');
+                    }
                 },
                 breakpoints: {
                     768: {
@@ -324,4 +342,3 @@
         }
     });
 }());
-
