@@ -55,7 +55,7 @@ for ($i = 1; $i <= 3; $i++) {
 $testimonials_title = alpha_edu_get_home_field('home_testimonials_title');
 $testimonial_query  = new WP_Query([
     'post_type'      => 'testimonial',
-    'posts_per_page' => 8,
+    'posts_per_page' => -1,
     'meta_query'     => [
         [
             'key'     => '_thumbnail_id',
