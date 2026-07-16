@@ -11,7 +11,7 @@ get_header();
 $notice_query = new WP_Query([
     'post_type'      => 'alpha_notice',
     'post_status'    => 'publish',
-    'posts_per_page' => 12,
+    'posts_per_page' => -1,
     'orderby'        => [
         'menu_order' => 'ASC',
         'date'       => 'DESC',
