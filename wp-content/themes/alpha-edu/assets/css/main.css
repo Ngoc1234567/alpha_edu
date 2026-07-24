@@ -1069,10 +1069,11 @@ a {
 
 .about-document-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
+    justify-content: center;
     gap: 22px;
     max-width: 760px;
-    margin-top: 38px;
+    margin: 38px auto 0;
 }
 
 .about-document-card {
