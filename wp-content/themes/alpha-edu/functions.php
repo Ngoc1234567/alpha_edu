@@ -2775,6 +2775,185 @@ function alpha_edu_render_documents_admin_page() {
     <?php
 }
 
+function alpha_edu_get_about_documents($post_id) {
+    $documents = get_post_meta(absint($post_id), '_alpha_about_documents', true);
+
+    if (! is_array($documents)) {
+        return [];
+    }
+
+    return array_values(array_filter(array_map(function ($document) {
+        if (! is_array($document)) {
+            return null;
+        }
+
+        $file = esc_url_raw($document['file'] ?? '');
+
+        if (! $file) {
+            return null;
+        }
+
+        $file_path = wp_parse_url($file, PHP_URL_PATH);
+
+        return [
+            'title' => sanitize_text_field($document['title'] ?? '') ?: basename((string) $file_path),
+            'cover' => esc_url_raw($document['cover'] ?? ''),
+            'file'  => $file,
+        ];
+    }, $documents)));
+}
+
+function alpha_edu_render_about_documents_after_intro_image($field) {
+    global $post;
+
+    if (! $post instanceof WP_Post
+        || 'page' !== $post->post_type
+        || 'page-templates/template-about.php' !== get_page_template_slug($post->ID)
+    ) {
+        return;
+    }
+
+    alpha_edu_render_about_documents_fields($post);
+}
+add_action('acf/render_field/key=field_alpha_about_intro_image', 'alpha_edu_render_about_documents_after_intro_image');
+
+function alpha_edu_render_about_documents_fields($post) {
+    $documents = alpha_edu_get_about_documents($post->ID);
+    wp_nonce_field('alpha_edu_save_about_documents', 'alpha_about_documents_nonce');
+    wp_enqueue_media();
+    wp_enqueue_script('jquery-ui-sortable');
+    ?>
+    <div class="acf-field alpha-about-documents" data-alpha-about-documents>
+        <div class="acf-label">
+            <label><?php esc_html_e('Tài liệu PDF', 'alpha-edu'); ?></label>
+            <p class="description"><?php esc_html_e('Thêm bao nhiêu tài liệu tùy ý. Kéo biểu tượng ☰ để thay đổi thứ tự hiển thị.', 'alpha-edu'); ?></p>
+        </div>
+        <div data-alpha-about-document-list>
+            <?php foreach ($documents as $index => $document) : ?>
+                <?php alpha_edu_render_about_document_admin_row($index, $document); ?>
+            <?php endforeach; ?>
+        </div>
+        <button type="button" class="button button-secondary" data-alpha-about-document-add><?php esc_html_e('Thêm tài liệu PDF', 'alpha-edu'); ?></button>
+    </div>
+    <script type="text/html" id="tmpl-alpha-about-document">
+        <?php alpha_edu_render_about_document_admin_row('__INDEX__', []); ?>
+    </script>
+    <style>
+        .alpha-about-document-row{display:grid;grid-template-columns:32px 1fr 1fr 1fr 70px;gap:12px;align-items:end;margin:0 0 12px;padding:14px;border:1px solid #dcdcde;background:#fff}
+        .alpha-about-document-row label{display:block;font-weight:600}
+        .alpha-about-document-row input{width:100%;margin-top:5px}
+        .alpha-about-document-handle{align-self:center;cursor:move;font-size:20px;text-align:center;color:#646970}
+        @media(max-width:900px){.alpha-about-document-row{grid-template-columns:32px 1fr}.alpha-about-document-remove{grid-column:2}}
+    </style>
+    <script>
+        jQuery(function ($) {
+            var list = $('[data-alpha-about-document-list]');
+            var template = $('#tmpl-alpha-about-document').html();
+
+            function reindex() {
+                list.children().each(function (index) {
+                    $(this).find('[name]').each(function () {
+                        this.name = this.name.replace(/alpha_about_documents\[[^\]]+\]/, 'alpha_about_documents[' + index + ']');
+                    });
+                });
+            }
+
+            list.sortable({handle: '.alpha-about-document-handle', update: reindex});
+
+            $('[data-alpha-about-document-add]').on('click', function () {
+                list.append(template.split('__INDEX__').join(list.children().length));
+            });
+
+            list.on('click', '[data-alpha-about-document-remove]', function () {
+                $(this).closest('.alpha-about-document-row').remove();
+                reindex();
+            });
+
+            list.on('click', '[data-alpha-about-select-file]', function () {
+                var input = $(this).siblings('input');
+                var frame = wp.media({title: '<?php echo esc_js(__('Chọn file PDF', 'alpha-edu')); ?>', multiple: false, library: {type: 'application/pdf'}});
+                frame.on('select', function () {
+                    input.val(frame.state().get('selection').first().toJSON().url || '');
+                });
+                frame.open();
+            });
+
+            list.on('click', '[data-alpha-about-select-cover]', function () {
+                var input = $(this).siblings('input');
+                var frame = wp.media({title: '<?php echo esc_js(__('Chọn ảnh bìa', 'alpha-edu')); ?>', multiple: false, library: {type: 'image'}});
+                frame.on('select', function () {
+                    input.val(frame.state().get('selection').first().toJSON().url || '');
+                });
+                frame.open();
+            });
+        });
+    </script>
+    <?php
+}
+
+function alpha_edu_render_about_document_admin_row($index, $document) {
+    ?>
+    <div class="alpha-about-document-row">
+        <span class="alpha-about-document-handle" title="<?php esc_attr_e('Kéo để sắp xếp', 'alpha-edu'); ?>">☰</span>
+        <label>
+            <?php esc_html_e('Tiêu đề', 'alpha-edu'); ?>
+            <input type="text" name="alpha_about_documents[<?php echo esc_attr($index); ?>][title]" value="<?php echo esc_attr($document['title'] ?? ''); ?>">
+        </label>
+        <label>
+            <?php esc_html_e('Ảnh bìa', 'alpha-edu'); ?>
+            <input type="url" name="alpha_about_documents[<?php echo esc_attr($index); ?>][cover]" value="<?php echo esc_url($document['cover'] ?? ''); ?>">
+            <button type="button" class="button" data-alpha-about-select-cover><?php esc_html_e('Chọn ảnh', 'alpha-edu'); ?></button>
+        </label>
+        <label>
+            <?php esc_html_e('File PDF', 'alpha-edu'); ?>
+            <input type="url" name="alpha_about_documents[<?php echo esc_attr($index); ?>][file]" value="<?php echo esc_url($document['file'] ?? ''); ?>">
+            <button type="button" class="button" data-alpha-about-select-file><?php esc_html_e('Chọn PDF', 'alpha-edu'); ?></button>
+        </label>
+        <button type="button" class="button-link-delete alpha-about-document-remove" data-alpha-about-document-remove><?php esc_html_e('Xóa', 'alpha-edu'); ?></button>
+    </div>
+    <?php
+}
+
+function alpha_edu_save_about_documents($post_id) {
+    if (! isset($_POST['alpha_about_documents_nonce'])
+        || ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['alpha_about_documents_nonce'])), 'alpha_edu_save_about_documents')
+        || (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
+        || ! current_user_can('edit_page', $post_id)
+    ) {
+        return;
+    }
+
+    $submitted = isset($_POST['alpha_about_documents']) && is_array($_POST['alpha_about_documents'])
+        ? wp_unslash($_POST['alpha_about_documents'])
+        : [];
+    $documents = [];
+
+    foreach ($submitted as $document) {
+        if (! is_array($document)) {
+            continue;
+        }
+
+        $file = esc_url_raw($document['file'] ?? '');
+
+        if (! $file) {
+            continue;
+        }
+
+        $documents[] = [
+            'title' => sanitize_text_field($document['title'] ?? ''),
+            'cover' => esc_url_raw($document['cover'] ?? ''),
+            'file'  => $file,
+        ];
+    }
+
+    if ($documents) {
+        update_post_meta($post_id, '_alpha_about_documents', $documents);
+    } else {
+        delete_post_meta($post_id, '_alpha_about_documents');
+    }
+}
+add_action('save_post_page', 'alpha_edu_save_about_documents');
+
 function alpha_edu_get_about_field_group_config() {
     return [
         'key' => 'group_alpha_about',

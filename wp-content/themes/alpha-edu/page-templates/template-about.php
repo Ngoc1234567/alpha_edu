@@ -19,6 +19,9 @@ get_header();
         $intro_title     = alpha_edu_get_page_field('about_intro_title', $post_id, 'TRUNG TÂM NGOẠI NGỮ - TIN HỌC ALPHA');
         $intro_content   = alpha_edu_get_page_field('about_intro_content', $post_id, "Trung tâm Ngoại ngữ - Tin học ALPHA được thành lập theo Quyết định số 1814/QĐ-SGDĐT ngày 08/8/2019 của Giám đốc Sở Giáo dục và Đào tạo tỉnh Thừa Thiên Huế. Trải qua quá trình xây dựng và phát triển, Trung tâm đã khẳng định được vai trò quan trọng trong việc tổ chức đào tạo, bồi dưỡng, thi và cấp chứng chỉ tin học cơ bản cũng như ngoại ngữ theo quy định của Bộ Giáo dục và Đào tạo.\n\nHằng năm, Trung tâm mở nhiều khóa đào tạo tin học và ngoại ngữ từ cơ bản đến nâng cao, giúp sinh viên và học viên không chỉ hoàn thiện kiến thức mà còn phát triển toàn diện các kỹ năng. Trung tâm đã tổ chức thi và cấp hàng nghìn chứng chỉ công nghệ thông tin và ngoại ngữ tiếng Anh cho sinh viên các trường đại học, cao đẳng cùng các học viên trong và ngoài tỉnh Thừa Thiên Huế.");
         $intro_image     = alpha_edu_get_page_field('about_intro_image', $post_id, $hero_image);
+        $intro_documents = function_exists('alpha_edu_get_about_documents')
+            ? alpha_edu_get_about_documents($post_id)
+            : [];
         $mission_title   = alpha_edu_get_page_field('about_mission_title', $post_id, 'SỨ MỆNH');
         $mission_content = alpha_edu_get_page_field('about_mission_content', $post_id, 'Ra đời với sứ mệnh nâng cao trình độ ngoại ngữ và tin học, ALPHA luôn nỗ lực mang đến một môi trường học tập hiện đại, gần gũi và hiệu quả. Chúng tôi tự hào với đội ngũ giảng viên giàu kinh nghiệm, đầy nhiệt huyết, luôn sẵn sàng đồng hành cùng học viên trên hành trình trau dồi kiến thức.');
         $slogan_title    = alpha_edu_get_page_field('about_slogan_title', $post_id, 'KHẨU HIỆU');
@@ -85,6 +88,24 @@ get_header();
 
                     <?php if ($intro_content) : ?>
                         <div class="about-rich-text"><?php echo wp_kses_post(wpautop($intro_content)); ?></div>
+                    <?php endif; ?>
+
+                    <?php if ($intro_documents) : ?>
+                        <div class="about-document-grid">
+                            <?php foreach ($intro_documents as $document) : ?>
+                                <a class="about-document-card" href="<?php echo esc_url($document['file']); ?>" target="_blank" rel="noopener">
+                                    <span class="about-document-cover">
+                                        <?php if ($document['cover']) : ?>
+                                            <img src="<?php echo esc_url($document['cover']); ?>" alt="<?php echo esc_attr($document['title']); ?>">
+                                        <?php else : ?>
+                                            <span class="about-document-pdf">PDF</span>
+                                        <?php endif; ?>
+                                    </span>
+                                    <strong><?php echo esc_html($document['title']); ?></strong>
+                                    <span class="about-document-action"><?php esc_html_e('Xem tài liệu', 'alpha-edu'); ?></span>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
                     <?php endif; ?>
                 </div>
 
