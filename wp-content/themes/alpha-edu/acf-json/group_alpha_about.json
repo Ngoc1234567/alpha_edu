@@ -128,7 +128,7 @@
             "label": "Nội dung giới thiệu",
             "name": "about_intro_content",
             "aria-label": "",
-            "type": "textarea",
+            "type": "wysiwyg",
             "instructions": "",
             "required": false,
             "conditional_logic": false,
@@ -137,11 +137,11 @@
                 "class": "",
                 "id": ""
             },
-            "rows": 8,
-            "new_lines": "",
             "default_value": "",
-            "maxlength": "",
-            "placeholder": ""
+            "tabs": "all",
+            "toolbar": "full",
+            "media_upload": 0,
+            "delay": 0
         },
         {
             "key": "field_alpha_about_intro_image",

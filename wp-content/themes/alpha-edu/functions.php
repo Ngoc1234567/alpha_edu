@@ -2815,7 +2815,6 @@ function alpha_edu_render_about_documents_after_intro_image($field) {
 
     alpha_edu_render_about_documents_fields($post);
 }
-add_action('acf/render_field/key=field_alpha_about_intro_image', 'alpha_edu_render_about_documents_after_intro_image');
 
 function alpha_edu_render_about_documents_fields($post) {
     $documents = alpha_edu_get_about_documents($post->ID);
@@ -2952,8 +2951,6 @@ function alpha_edu_save_about_documents($post_id) {
         delete_post_meta($post_id, '_alpha_about_documents');
     }
 }
-add_action('save_post_page', 'alpha_edu_save_about_documents');
-
 function alpha_edu_get_about_field_group_config() {
     return [
         'key' => 'group_alpha_about',
@@ -3007,9 +3004,11 @@ function alpha_edu_get_about_field_group_config() {
                 'key' => 'field_alpha_about_intro_content',
                 'label' => __('Nội dung giới thiệu', 'alpha-edu'),
                 'name' => 'about_intro_content',
-                'type' => 'textarea',
-                'rows' => 8,
-                'new_lines' => '',
+                'type' => 'wysiwyg',
+                'tabs' => 'all',
+                'toolbar' => 'full',
+                'media_upload' => 0,
+                'delay' => 0,
             ],
             [
                 'key' => 'field_alpha_about_intro_image',
@@ -3155,6 +3154,19 @@ function alpha_edu_get_about_field_group_config() {
         'active' => true,
     ];
 }
+
+function alpha_edu_load_about_intro_content_editor($field) {
+    $field['type']         = 'wysiwyg';
+    $field['tabs']         = 'all';
+    $field['toolbar']      = 'full';
+    $field['media_upload'] = 0;
+    $field['delay']        = 0;
+
+    unset($field['rows'], $field['new_lines']);
+
+    return $field;
+}
+add_filter('acf/load_field/key=field_alpha_about_intro_content', 'alpha_edu_load_about_intro_content_editor');
 
 function alpha_edu_seed_about_acf_field_group() {
     if (! function_exists('acf_import_field_group')) {
