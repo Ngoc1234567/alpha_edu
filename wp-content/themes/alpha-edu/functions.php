@@ -2815,6 +2815,7 @@ function alpha_edu_render_about_documents_after_intro_image($field) {
 
     alpha_edu_render_about_documents_fields($post);
 }
+add_action('acf/render_field/key=field_alpha_about_intro_image', 'alpha_edu_render_about_documents_after_intro_image');
 
 function alpha_edu_render_about_documents_fields($post) {
     $documents = alpha_edu_get_about_documents($post->ID);
@@ -2951,6 +2952,8 @@ function alpha_edu_save_about_documents($post_id) {
         delete_post_meta($post_id, '_alpha_about_documents');
     }
 }
+add_action('save_post_page', 'alpha_edu_save_about_documents');
+
 function alpha_edu_get_about_field_group_config() {
     return [
         'key' => 'group_alpha_about',
