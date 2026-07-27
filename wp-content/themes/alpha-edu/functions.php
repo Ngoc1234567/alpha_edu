@@ -3007,7 +3007,7 @@ function alpha_edu_get_about_field_group_config() {
                 'type' => 'wysiwyg',
                 'tabs' => 'all',
                 'toolbar' => 'full',
-                'media_upload' => 0,
+                'media_upload' => 1,
                 'delay' => 0,
             ],
             [
@@ -3159,7 +3159,7 @@ function alpha_edu_load_about_intro_content_editor($field) {
     $field['type']         = 'wysiwyg';
     $field['tabs']         = 'all';
     $field['toolbar']      = 'full';
-    $field['media_upload'] = 0;
+    $field['media_upload'] = 1;
     $field['delay']        = 0;
 
     unset($field['rows'], $field['new_lines']);
