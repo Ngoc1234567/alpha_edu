@@ -1005,8 +1005,8 @@ function alpha_edu_registration_cf7_form_template() {
 <label> Nhân viên hướng dẫn/ hỗ trợ (*)
     [text* registration-supporter] </label>
 
-<label> Ghi chú (*)
-    [textarea* registration-note] </label>
+<label> Ghi chú
+    [textarea registration-note] </label>
 
 [submit "ĐĂNG KÝ NGAY"]
 CF7);
@@ -1081,7 +1081,7 @@ function alpha_edu_ensure_registration_cf7_form() {
         return;
     }
 
-    $template_version = '2026-07-03-3';
+    $template_version = '2026-08-06-1';
     $title = 'Alpha - Form đăng ký học/thi';
     $form_id = (int) get_option('alpha_registration_cf7_form_id', 0);
     $form_post = $form_id ? get_post($form_id) : null;
