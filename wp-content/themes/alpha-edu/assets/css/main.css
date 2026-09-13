@@ -1808,6 +1808,13 @@ a {
     width: 22%;
 }
 
+.certificate-result-table th:nth-child(1),
+.certificate-result-table th:nth-child(2),
+.certificate-result-table th:nth-child(3),
+.certificate-result-table th:nth-child(4) {
+    width: 25%;
+}
+
 .score-result-table td:nth-child(3) {
     text-align: left;
 }
