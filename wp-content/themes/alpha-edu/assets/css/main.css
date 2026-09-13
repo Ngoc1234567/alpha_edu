@@ -103,6 +103,10 @@ a {
     margin: 0;
 }
 
+.main-menu li {
+    position: relative;
+}
+
 .main-menu .is-hidden-menu-item {
     display: none;
 }
@@ -132,6 +136,48 @@ a {
     background: #ffd7df;
     color: var(--alpha-blue-dark);
     padding: 0 16px;
+}
+
+.main-menu .sub-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 20;
+    min-width: 210px;
+    display: grid;
+    gap: 4px;
+    list-style: none;
+    margin: 0;
+    padding: 10px;
+    border: 1px solid #e6eefb;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 14px 34px rgba(18, 94, 199, 0.16);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6px);
+    transition: opacity 160ms ease, transform 160ms ease, visibility 160ms ease;
+}
+
+.main-menu li:hover > .sub-menu,
+.main-menu li:focus-within > .sub-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.main-menu .sub-menu a {
+    width: 100%;
+    justify-content: flex-start;
+    min-height: 34px;
+    padding: 0 12px;
+    font-size: 16px;
+}
+
+.main-menu .sub-menu a:hover,
+.main-menu .sub-menu a:focus-visible,
+.main-menu .sub-menu .current-menu-item > a {
+    padding: 0 12px;
 }
 
 .header-cta {
@@ -2501,6 +2547,39 @@ a {
     .main-menu a {
         min-height: 32px;
         font-size: 13px;
+    }
+
+    .main-menu .menu-item-lookup-parent {
+        display: grid;
+        justify-items: center;
+        gap: 4px;
+    }
+
+    .main-menu .sub-menu {
+        position: static;
+        min-width: 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+    }
+
+    .main-menu .sub-menu a {
+        min-height: 30px;
+        padding: 0 10px;
+        font-size: 12px;
+    }
+
+    .main-menu .sub-menu a:hover,
+    .main-menu .sub-menu a:focus-visible,
+    .main-menu .sub-menu .current-menu-item > a {
+        padding: 0 10px;
     }
 
     .header-cta {

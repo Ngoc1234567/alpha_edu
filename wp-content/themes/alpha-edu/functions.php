@@ -116,30 +116,52 @@ function alpha_edu_add_certificate_lookup_menu_item($items, $args) {
 
     $certificate_url = alpha_edu_get_page_url_by_template('page-templates/template-certificate-lookup.php');
 
-    if (! $certificate_url || false !== strpos($items, $certificate_url)) {
+    if (! $certificate_url || false !== strpos($items, 'menu-item-lookup-parent')) {
         return $items;
     }
 
-    $classes = ['menu-item', 'menu-item-type-post_type', 'menu-item-object-page', 'menu-item-certificate-lookup'];
+    $score_url = alpha_edu_get_page_url_by_template('page-templates/template-score-lookup.php');
+    $certificate_pattern = '/<li\b[^>]*>\s*<a\b[^>]*href=["\']' . preg_quote(esc_url($certificate_url), '/') . '["\'][^>]*>.*?<\/a>\s*<\/li>/iu';
+    $items = preg_replace($certificate_pattern, '', $items, 1);
+    $is_lookup_current = is_page_template('page-templates/template-score-lookup.php') || is_page_template('page-templates/template-certificate-lookup.php');
+    $parent_classes = ['menu-item', 'menu-item-has-children', 'menu-item-lookup-parent'];
 
-    if (is_page_template('page-templates/template-certificate-lookup.php')) {
-        $classes[] = 'current-menu-item';
+    if ($is_lookup_current) {
+        $parent_classes[] = 'current-menu-ancestor';
     }
+
+    $score_item = $score_url
+        ? sprintf(
+            '<li class="%1$s"><a href="%2$s">%3$s</a></li>',
+            esc_attr('menu-item menu-item-type-post_type menu-item-object-page menu-item-score-lookup' . (is_page_template('page-templates/template-score-lookup.php') ? ' current-menu-item' : '')),
+            esc_url($score_url),
+            esc_html__('Tra cứu điểm', 'alpha-edu')
+        )
+        : '';
 
     $certificate_item = sprintf(
         '<li class="%1$s"><a href="%2$s">%3$s</a></li>',
-        esc_attr(implode(' ', $classes)),
+        esc_attr('menu-item menu-item-type-post_type menu-item-object-page menu-item-certificate-lookup' . (is_page_template('page-templates/template-certificate-lookup.php') ? ' current-menu-item' : '')),
         esc_url($certificate_url),
         esc_html__('Tra cứu chứng chỉ', 'alpha-edu')
     );
 
-    $score_pattern = '/(<li\b[^>]*>\s*<a\b[^>]*>[^<]*Tra cứu điểm[^<]*<\/a>\s*<\/li>)/iu';
+    $lookup_item = sprintf(
+        '<li class="%1$s"><a href="%2$s" aria-haspopup="true" aria-expanded="false">%3$s</a><ul class="sub-menu">%4$s%5$s</ul></li>',
+        esc_attr(implode(' ', $parent_classes)),
+        esc_url($score_url ?: $certificate_url),
+        esc_html__('Tra cứu', 'alpha-edu'),
+        $score_item,
+        $certificate_item
+    );
+
+    $score_pattern = '/<li\b[^>]*>\s*<a\b[^>]*>[^<]*Tra cứu điểm[^<]*<\/a>\s*<\/li>/iu';
 
     if (preg_match($score_pattern, $items)) {
-        return preg_replace($score_pattern, '$1' . $certificate_item, $items, 1);
+        return preg_replace($score_pattern, $lookup_item, $items, 1);
     }
 
-    return $items . $certificate_item;
+    return $items . $lookup_item;
 }
 add_filter('wp_nav_menu_items', 'alpha_edu_add_certificate_lookup_menu_item', 10, 2);
 
@@ -3273,7 +3295,7 @@ function alpha_edu_render_certificate_results_admin_page() {
                                 <th style="width:140px;"><?php esc_html_e('Ngày sinh', 'alpha-edu'); ?></th>
                                 <th style="width:140px;"><?php esc_html_e('Ngày cấp', 'alpha-edu'); ?></th>
                                 <th style="width:260px;"><?php esc_html_e('Hội đồng cấp', 'alpha-edu'); ?></th>
-                                <th style="width:140px;"><?php esc_html_e('Trạng thái', 'alpha-edu'); ?></th>
+                                <th style="width:140px;"><?php esc_html_e('Kết quả thi', 'alpha-edu'); ?></th>
                                 <th style="width:220px;"><?php esc_html_e('Ghi chú', 'alpha-edu'); ?></th>
                             </tr>
                         </thead>

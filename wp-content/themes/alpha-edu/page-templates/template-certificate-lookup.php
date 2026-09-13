@@ -124,6 +124,17 @@ if ($has_searched && function_exists('alpha_edu_lookup_certificate_results')) {
                     </thead>
                     <tbody>
                         <?php foreach ($results as $row) : ?>
+                            <?php
+                            $status_text = trim((string) ($row['status'] ?? ''));
+                            $status_key = sanitize_title(remove_accents($status_text));
+                            $status_class = '';
+
+                            if ('dat' === $status_key) {
+                                $status_class = ' is-pass';
+                            } elseif ('khong-dat' === $status_key) {
+                                $status_class = ' is-fail';
+                            }
+                            ?>
                             <tr>
                                 <td><?php echo esc_html($row['cccd'] ?: '-'); ?></td>
                                 <td><?php echo esc_html(('' !== ($row['student_name'] ?? '')) ? $row['student_name'] : '-'); ?></td>
@@ -133,7 +144,7 @@ if ($has_searched && function_exists('alpha_edu_lookup_certificate_results')) {
                                     <span>- Ngày sinh: <strong><?php echo esc_html(($row['birth_date'] ?? '') ?: '-'); ?></strong></span>
                                     <span>- Ngày cấp: <strong><?php echo esc_html($row['issue_date'] ?: '-'); ?></strong></span>
                                     <span>- Hội đồng cấp: <strong><?php echo esc_html(($row['council'] ?? '') ?: '-'); ?></strong></span>
-                                    <span>- Trạng thái: <strong><?php echo esc_html($row['status'] ?: '-'); ?></strong></span>
+                                    <span>- Kết quả thi: <strong class="score-result-status<?php echo esc_attr($status_class); ?>"><?php echo esc_html($status_text ?: '-'); ?></strong></span>
                                 </td>
                                 <td><?php echo esc_html($row['note'] ?: '-'); ?></td>
                             </tr>
