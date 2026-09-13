@@ -57,6 +57,92 @@ function alpha_edu_hide_exam_registration_menu_item($classes, $item, $args) {
 }
 add_filter('nav_menu_css_class', 'alpha_edu_hide_exam_registration_menu_item', 10, 3);
 
+function alpha_edu_get_page_url_by_template($template) {
+    $pages = get_pages([
+        'meta_key'    => '_wp_page_template',
+        'meta_value'  => $template,
+        'number'      => 1,
+        'post_status' => 'publish',
+    ]);
+
+    if (empty($pages)) {
+        return '';
+    }
+
+    return get_permalink($pages[0]);
+}
+
+function alpha_edu_ensure_certificate_lookup_page() {
+    if (! function_exists('wp_insert_post')) {
+        return;
+    }
+
+    $template = 'page-templates/template-certificate-lookup.php';
+    $existing_url = alpha_edu_get_page_url_by_template($template);
+
+    if ($existing_url) {
+        return;
+    }
+
+    $page = get_page_by_path('tra-cuu-chung-chi');
+
+    if (! $page) {
+        $page = get_page_by_path('tra-cuu-thong-tin-chung-chi');
+    }
+
+    if ($page) {
+        update_post_meta($page->ID, '_wp_page_template', $template);
+        return;
+    }
+
+    $page_id = wp_insert_post([
+        'post_title'   => __('Tra cứu chứng chỉ', 'alpha-edu'),
+        'post_name'    => 'tra-cuu-chung-chi',
+        'post_status'  => 'publish',
+        'post_type'    => 'page',
+        'post_content' => '',
+    ], true);
+
+    if (! is_wp_error($page_id)) {
+        update_post_meta($page_id, '_wp_page_template', $template);
+    }
+}
+add_action('init', 'alpha_edu_ensure_certificate_lookup_page');
+
+function alpha_edu_add_certificate_lookup_menu_item($items, $args) {
+    if (empty($args->theme_location) || 'primary' !== $args->theme_location) {
+        return $items;
+    }
+
+    $certificate_url = alpha_edu_get_page_url_by_template('page-templates/template-certificate-lookup.php');
+
+    if (! $certificate_url || false !== strpos($items, $certificate_url)) {
+        return $items;
+    }
+
+    $classes = ['menu-item', 'menu-item-type-post_type', 'menu-item-object-page', 'menu-item-certificate-lookup'];
+
+    if (is_page_template('page-templates/template-certificate-lookup.php')) {
+        $classes[] = 'current-menu-item';
+    }
+
+    $certificate_item = sprintf(
+        '<li class="%1$s"><a href="%2$s">%3$s</a></li>',
+        esc_attr(implode(' ', $classes)),
+        esc_url($certificate_url),
+        esc_html__('Tra cứu chứng chỉ', 'alpha-edu')
+    );
+
+    $score_pattern = '/(<li\b[^>]*>\s*<a\b[^>]*>[^<]*Tra cứu điểm[^<]*<\/a>\s*<\/li>)/iu';
+
+    if (preg_match($score_pattern, $items)) {
+        return preg_replace($score_pattern, '$1' . $certificate_item, $items, 1);
+    }
+
+    return $items . $certificate_item;
+}
+add_filter('wp_nav_menu_items', 'alpha_edu_add_certificate_lookup_menu_item', 10, 2);
+
 function alpha_edu_register_post_types() {
     register_post_type('course', [
         'labels' => [
