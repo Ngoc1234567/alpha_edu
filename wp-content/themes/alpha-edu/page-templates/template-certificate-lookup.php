@@ -16,7 +16,7 @@ if ($has_searched && function_exists('alpha_edu_lookup_certificate_results')) {
     $results = alpha_edu_lookup_certificate_results($keyword);
 }
 ?>
-<main class="score-page section-padding">
+<main class="score-page certificate-lookup-page section-padding">
     <div class="container score-layout">
         <h1 class="score-page-title">TRA CỨU THÔNG TIN CHỨNG CHỈ</h1>
 
@@ -24,7 +24,7 @@ if ($has_searched && function_exists('alpha_edu_lookup_certificate_results')) {
             <input type="hidden" name="certificate_lookup" value="1">
 
             <label class="score-field">
-                <span>Số hiệu chứng chỉ:</span>
+                <span>Số hiệu:</span>
                 <input type="text" name="certificate_keyword" value="<?php echo esc_attr($keyword); ?>" placeholder="Nhập số hiệu chứng chỉ">
             </label>
 
@@ -40,33 +40,24 @@ if ($has_searched && function_exists('alpha_edu_lookup_certificate_results')) {
                 <table class="score-result-table certificate-result-table">
                     <thead>
                         <tr>
-                            <th>Học viên</th>
-                            <th>Kết quả tra cứu</th>
+                            <th>Số hiệu</th>
+                            <th>Thông tin</th>
                             <th>Ghi chú</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($results as $row) : ?>
-                            <?php
-                            $status_text = trim((string) ($row['status'] ?? ''));
-                            $status_key = sanitize_title(remove_accents($status_text));
-                            $status_class = '';
-
-                            if ('dat' === $status_key) {
-                                $status_class = ' is-pass';
-                            } elseif ('khong-dat' === $status_key) {
-                                $status_class = ' is-fail';
-                            }
-                            ?>
                             <tr>
-                                <td><?php echo esc_html(('' !== ($row['student_name'] ?? '')) ? $row['student_name'] : '-'); ?></td>
-                                <td>
-                                    <span>- Tên chứng chỉ: <strong><?php echo esc_html($row['certificate_name'] ?: '-'); ?></strong></span>
-                                    <span>- Số hiệu chứng chỉ: <strong><?php echo esc_html($row['certificate_number'] ?: '-'); ?></strong></span>
-                                    <span>- Ngày sinh: <strong><?php echo esc_html(($row['birth_date'] ?? '') ?: '-'); ?></strong></span>
-                                    <span>- Ngày cấp: <strong><?php echo esc_html($row['issue_date'] ?: '-'); ?></strong></span>
-                                    <span>- Hội đồng cấp: <strong><?php echo esc_html(($row['council'] ?? '') ?: '-'); ?></strong></span>
-                                    <span>- Kết quả thi: <strong class="score-result-status<?php echo esc_attr($status_class); ?>"><?php echo esc_html($status_text ?: '-'); ?></strong></span>
+                                <td class="certificate-number"><?php echo esc_html($row['certificate_number'] ?: '-'); ?></td>
+                                <td class="certificate-information">
+                                    <dl>
+                                        <div><dt>Họ và tên:</dt><dd class="certificate-student-name"><?php echo esc_html(($row['student_name'] ?? '') ?: '-'); ?></dd></div>
+                                        <div><dt>Ngày sinh:</dt><dd><?php echo esc_html(($row['birth_date'] ?? '') ?: '-'); ?></dd></div>
+                                        <div><dt>Hội đồng cấp chứng chỉ:</dt><dd><?php echo esc_html(($row['council'] ?? '') ?: '-'); ?></dd></div>
+                                        <div><dt>Loại chứng chỉ:</dt><dd><?php echo esc_html(($row['certificate_name'] ?? '') ?: '-'); ?></dd></div>
+                                        <div><dt>Ngày thi:</dt><dd><?php echo esc_html(($row['course'] ?? '') ?: '-'); ?></dd></div>
+                                        <div><dt>Ngày cấp chứng chỉ:</dt><dd><?php echo esc_html(($row['issue_date'] ?? '') ?: '-'); ?></dd></div>
+                                    </dl>
                                 </td>
                                 <td><?php echo esc_html($row['note'] ?: '-'); ?></td>
                             </tr>

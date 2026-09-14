@@ -1855,15 +1855,15 @@ a {
 }
 
 .certificate-result-table th:nth-child(1) {
-    width: 25%;
+    width: 18%;
 }
 
 .certificate-result-table th:nth-child(2) {
-    width: 50%;
+    width: 62%;
 }
 
 .certificate-result-table th:nth-child(3) {
-    width: 25%;
+    width: 20%;
 }
 
 .certificate-result-table td:nth-child(2) {
@@ -1872,6 +1872,41 @@ a {
 
 .certificate-result-table td:nth-child(2) span {
     display: block;
+}
+
+.certificate-lookup-page .score-lookup-form {
+    gap: 34px;
+}
+
+.certificate-lookup-page .score-result-table th {
+    background: #f4f7fd;
+}
+
+.certificate-lookup-page .certificate-number {
+    color: #0755a5;
+    font-weight: 900;
+}
+
+.certificate-information dl {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+}
+
+.certificate-information dl > div {
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr);
+    gap: 16px;
+}
+
+.certificate-information dt,
+.certificate-information dd {
+    margin: 0;
+}
+
+.certificate-information .certificate-student-name {
+    color: #0755a5;
+    font-weight: 900;
 }
 
 .score-result-table td:nth-child(3) {
