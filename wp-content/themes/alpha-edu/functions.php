@@ -2624,7 +2624,6 @@ function alpha_edu_match_certificate_column($header) {
     $columns = [
         'year'               => ['nam', 'year', 'nam_cap', 'nam_thi'],
         'course'             => ['khoa_thi', 'khoa', 'dot_thi', 'ky_thi', 'course', 'exam'],
-        'cccd'               => ['cccd', 'so_cccd', 'cmnd', 'so_cmnd', 'can_cuoc', 'can_cuoc_cong_dan'],
         'student_name'       => ['ho_va_ten', 'ho_ten', 'hoc_vien', 'ten_hoc_vien', 'ho_ten_hoc_vien', 'ten_hv'],
         'last_name'          => ['ho_va', 'ho_va_ten_dem', 'ho_ten_dem', 'ho_dem', 'ho'],
         'first_name'         => ['ten'],
@@ -2733,7 +2732,6 @@ function alpha_edu_build_certificate_results_from_rows($rows) {
         $item = [
             'year'               => $year,
             'course'             => $course,
-            'cccd'               => isset($column_map['cccd']) ? alpha_edu_clean_exam_cell($row[$column_map['cccd']] ?? '') : '',
             'student_name'       => $student_name,
             'certificate_name'   => isset($column_map['certificate_name']) ? alpha_edu_clean_exam_cell($row[$column_map['certificate_name']] ?? '') : '',
             'certificate_number' => alpha_edu_clean_exam_cell($row[$column_map['certificate_number']] ?? ''),
@@ -2898,10 +2896,9 @@ function alpha_edu_get_certificate_courses($year = '') {
     return array_values(array_unique($courses));
 }
 
-function alpha_edu_lookup_certificate_results($year, $course, $keyword) {
+function alpha_edu_lookup_certificate_results($keyword) {
     $data = alpha_edu_get_certificate_results_data();
     $keyword = alpha_edu_clean_exam_cell($keyword);
-    $keyword_digits = preg_replace('/\D+/', '', (string) $keyword);
     $keyword_key = strtolower(remove_accents($keyword));
     $results = [];
 
@@ -2910,18 +2907,9 @@ function alpha_edu_lookup_certificate_results($year, $course, $keyword) {
     }
 
     foreach ($data['rows'] as $row) {
-        $row_cccd = preg_replace('/\D+/', '', (string) ($row['cccd'] ?? ''));
         $row_certificate_number = strtolower(remove_accents(alpha_edu_clean_exam_cell($row['certificate_number'] ?? '')));
 
-        if ($year && $year !== ($row['year'] ?? '')) {
-            continue;
-        }
-
-        if ($course && $course !== ($row['course'] ?? '')) {
-            continue;
-        }
-
-        if ($keyword_key !== $row_certificate_number && ('' === $keyword_digits || $keyword_digits !== $row_cccd)) {
+        if ($keyword_key !== $row_certificate_number) {
             continue;
         }
 
@@ -2948,7 +2936,6 @@ function alpha_edu_certificate_result_key($row) {
     return implode('|', [
         $row['year'] ?? '',
         $row['course'] ?? '',
-        preg_replace('/\D+/', '', (string) ($row['cccd'] ?? '')),
         $row['certificate_number'] ?? '',
     ]);
 }
@@ -3040,7 +3027,6 @@ function alpha_edu_handle_certificate_results_save_rows() {
         $item = [
             'year'               => alpha_edu_clean_exam_cell($row['year'] ?? ''),
             'course'             => alpha_edu_clean_exam_cell($row['course'] ?? ''),
-            'cccd'               => alpha_edu_clean_exam_cell($row['cccd'] ?? ''),
             'student_name'       => alpha_edu_clean_exam_cell($row['student_name'] ?? ''),
             'certificate_name'   => alpha_edu_clean_exam_cell($row['certificate_name'] ?? ''),
             'certificate_number' => alpha_edu_clean_exam_cell($row['certificate_number'] ?? ''),
@@ -3092,7 +3078,6 @@ function alpha_edu_render_certificate_results_admin_page() {
         $haystack = implode(' ', [
             $row['year'] ?? '',
             $row['course'] ?? '',
-            $row['cccd'] ?? '',
             $row['student_name'] ?? '',
             $row['certificate_name'] ?? '',
             $row['certificate_number'] ?? '',
@@ -3288,7 +3273,6 @@ function alpha_edu_render_certificate_results_admin_page() {
                                 <th style="width:32px;"><input type="checkbox" id="alpha-certificate-select-all"></th>
                                 <th style="width:84px;"><?php esc_html_e('Năm', 'alpha-edu'); ?></th>
                                 <th style="width:300px;"><?php esc_html_e('Khóa thi', 'alpha-edu'); ?></th>
-                                <th style="width:170px;"><?php esc_html_e('CCCD', 'alpha-edu'); ?></th>
                                 <th style="width:220px;"><?php esc_html_e('Học viên', 'alpha-edu'); ?></th>
                                 <th style="width:220px;"><?php esc_html_e('Tên chứng chỉ', 'alpha-edu'); ?></th>
                                 <th style="width:180px;"><?php esc_html_e('Số hiệu chứng chỉ', 'alpha-edu'); ?></th>
@@ -3305,7 +3289,6 @@ function alpha_edu_render_certificate_results_admin_page() {
                                     <td><input type="checkbox" class="alpha-certificate-row-checkbox" name="alpha_certificate_delete[]" value="<?php echo esc_attr($index); ?>"></td>
                                     <td><input type="text" name="alpha_certificate_rows[<?php echo esc_attr($index); ?>][year]" value="<?php echo esc_attr($row['year']); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_certificate_rows[<?php echo esc_attr($index); ?>][course]" value="<?php echo esc_attr($row['course']); ?>" style="width:100%;"></td>
-                                    <td><input type="text" name="alpha_certificate_rows[<?php echo esc_attr($index); ?>][cccd]" value="<?php echo esc_attr($row['cccd']); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_certificate_rows[<?php echo esc_attr($index); ?>][student_name]" value="<?php echo esc_attr($row['student_name'] ?? ''); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_certificate_rows[<?php echo esc_attr($index); ?>][certificate_name]" value="<?php echo esc_attr($row['certificate_name'] ?? ''); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_certificate_rows[<?php echo esc_attr($index); ?>][certificate_number]" value="<?php echo esc_attr($row['certificate_number'] ?? ''); ?>" style="width:100%;"></td>

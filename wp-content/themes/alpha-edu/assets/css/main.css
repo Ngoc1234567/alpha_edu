@@ -1854,11 +1854,24 @@ a {
     width: 22%;
 }
 
-.certificate-result-table th:nth-child(1),
-.certificate-result-table th:nth-child(2),
-.certificate-result-table th:nth-child(3),
-.certificate-result-table th:nth-child(4) {
+.certificate-result-table th:nth-child(1) {
     width: 25%;
+}
+
+.certificate-result-table th:nth-child(2) {
+    width: 50%;
+}
+
+.certificate-result-table th:nth-child(3) {
+    width: 25%;
+}
+
+.certificate-result-table td:nth-child(2) {
+    text-align: left;
+}
+
+.certificate-result-table td:nth-child(2) span {
+    display: block;
 }
 
 .score-result-table td:nth-child(3) {
