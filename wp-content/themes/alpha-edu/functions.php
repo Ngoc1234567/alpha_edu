@@ -2285,6 +2285,20 @@ function alpha_edu_handle_exam_results_upload() {
 }
 add_action('admin_post_alpha_edu_upload_exam_results', 'alpha_edu_handle_exam_results_upload');
 
+function alpha_edu_handle_exam_results_delete_all() {
+    if (! current_user_can('manage_options')) {
+        wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'alpha-edu'));
+    }
+
+    check_admin_referer('alpha_edu_exam_results_delete_all');
+
+    delete_option('alpha_edu_exam_results_data');
+
+    wp_safe_redirect(add_query_arg('alpha_exam_status', 'deleted_all', admin_url('admin.php?page=alpha-edu-exam-results')));
+    exit;
+}
+add_action('admin_post_alpha_edu_delete_all_exam_results', 'alpha_edu_handle_exam_results_delete_all');
+
 function alpha_edu_handle_exam_results_save_rows() {
     if (! current_user_can('manage_options')) {
         wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'alpha-edu'));
@@ -2483,6 +2497,8 @@ function alpha_edu_render_exam_results_admin_page() {
             <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã lưu các dòng kết quả thi.', 'alpha-edu'); ?></p></div>
         <?php elseif ('deleted' === $status) : ?>
             <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã xóa các dòng kết quả thi đã chọn.', 'alpha-edu'); ?></p></div>
+        <?php elseif ('deleted_all' === $status) : ?>
+            <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã xóa tất cả kết quả thi.', 'alpha-edu'); ?></p></div>
         <?php elseif ('missing' === $status) : ?>
             <div class="notice notice-error is-dismissible"><p><?php esc_html_e('Vui lòng chọn file để upload.', 'alpha-edu'); ?></p></div>
         <?php elseif ('invalid' === $status) : ?>
@@ -2595,6 +2611,12 @@ function alpha_edu_render_exam_results_admin_page() {
                 <p class="description"><?php esc_html_e('Dòng thiếu Năm, Khóa thi hoặc CCCD sẽ không được lưu.', 'alpha-edu'); ?></p>
             </form>
 
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin-top:12px;" onsubmit="return confirm('<?php echo esc_js(__('Bạn có chắc muốn xóa TẤT CẢ kết quả thi, bao gồm các trang khác và dữ liệu ngoài kết quả tìm kiếm? Thao tác này không thể hoàn tác.', 'alpha-edu')); ?>');">
+                <?php wp_nonce_field('alpha_edu_exam_results_delete_all'); ?>
+                <input type="hidden" name="action" value="alpha_edu_delete_all_exam_results">
+                <button type="submit" class="button" style="color:#b32d2e;border-color:#b32d2e;"><?php esc_html_e('Xóa tất cả', 'alpha-edu'); ?></button>
+            </form>
+
             <script>
                 (function () {
                     var selectAll = document.getElementById('alpha-exam-select-all');
@@ -2629,7 +2651,7 @@ function alpha_edu_match_certificate_column($header) {
         'first_name'         => ['ten'],
         'certificate_name'   => ['ten_chung_chi', 'chung_chi', 'loai_chung_chi', 'ten_cc', 'certificate', 'certificate_name'],
         'certificate_number' => ['so_hieu_chung_chi', 'so_chung_chi', 'ma_chung_chi', 'so_hieu', 'certificate_number'],
-        'registration_number' => ['so_vao_so_cap_chung_chi', 'so_vao_so_chung_chi', 'so_vao_so', 'registration_number'],
+        'registration_number' => ['so_vao_so_cap_chung_chi', 'so_vao_so_goc_cap_chung_chi', 'so_vao_so_chung_chi', 'so_vao_so', 'registration_number'],
         'birth_date'         => ['ngay_sinh', 'nam_sinh', 'birth_date'],
         'issue_date'         => ['ngay_cap', 'ngay_cap_chung_chi', 'ngay_nhan', 'ngay_phat', 'issue_date'],
         'council'            => ['hoi_dong_cap', 'don_vi_cap', 'noi_cap', 'council'],
@@ -3008,6 +3030,20 @@ function alpha_edu_handle_certificate_results_upload() {
 }
 add_action('admin_post_alpha_edu_upload_certificate_results', 'alpha_edu_handle_certificate_results_upload');
 
+function alpha_edu_handle_certificate_results_delete_all() {
+    if (! current_user_can('manage_options')) {
+        wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'alpha-edu'));
+    }
+
+    check_admin_referer('alpha_edu_certificate_results_delete_all');
+
+    delete_option('alpha_edu_certificate_results_data');
+
+    wp_safe_redirect(add_query_arg('alpha_certificate_status', 'deleted_all', admin_url('admin.php?page=alpha-edu-certificate-results')));
+    exit;
+}
+add_action('admin_post_alpha_edu_delete_all_certificate_results', 'alpha_edu_handle_certificate_results_delete_all');
+
 function alpha_edu_handle_certificate_results_save_rows() {
     if (! current_user_can('manage_options')) {
         wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'alpha-edu'));
@@ -3206,6 +3242,8 @@ function alpha_edu_render_certificate_results_admin_page() {
             <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã lưu các dòng thông tin chứng chỉ.', 'alpha-edu'); ?></p></div>
         <?php elseif ('deleted' === $status) : ?>
             <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã xóa các dòng thông tin chứng chỉ đã chọn.', 'alpha-edu'); ?></p></div>
+        <?php elseif ('deleted_all' === $status) : ?>
+            <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã xóa tất cả thông tin chứng chỉ.', 'alpha-edu'); ?></p></div>
         <?php elseif ('missing' === $status) : ?>
             <div class="notice notice-error is-dismissible"><p><?php esc_html_e('Vui lòng chọn file để upload.', 'alpha-edu'); ?></p></div>
         <?php elseif ('invalid' === $status) : ?>
@@ -3320,6 +3358,12 @@ function alpha_edu_render_certificate_results_admin_page() {
                     onclick="return confirm('<?php echo esc_js(__('Bạn có chắc muốn xóa các dòng thông tin chứng chỉ đã chọn?', 'alpha-edu')); ?>');"
                 ><?php esc_html_e('Xóa các dòng đã chọn', 'alpha-edu'); ?></button>
                 <p class="description"><?php esc_html_e('Dòng thiếu Năm, Khóa thi hoặc Số hiệu chứng chỉ sẽ không được lưu.', 'alpha-edu'); ?></p>
+            </form>
+
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin-top:12px;" onsubmit="return confirm('<?php echo esc_js(__('Bạn có chắc muốn xóa TẤT CẢ thông tin chứng chỉ, bao gồm các trang khác và dữ liệu ngoài kết quả tìm kiếm? Thao tác này không thể hoàn tác.', 'alpha-edu')); ?>');">
+                <?php wp_nonce_field('alpha_edu_certificate_results_delete_all'); ?>
+                <input type="hidden" name="action" value="alpha_edu_delete_all_certificate_results">
+                <button type="submit" class="button" style="color:#b32d2e;border-color:#b32d2e;"><?php esc_html_e('Xóa tất cả', 'alpha-edu'); ?></button>
             </form>
 
             <script>
