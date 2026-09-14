@@ -2628,7 +2628,8 @@ function alpha_edu_match_certificate_column($header) {
         'last_name'          => ['ho_va', 'ho_va_ten_dem', 'ho_ten_dem', 'ho_dem', 'ho'],
         'first_name'         => ['ten'],
         'certificate_name'   => ['ten_chung_chi', 'chung_chi', 'loai_chung_chi', 'ten_cc', 'certificate', 'certificate_name'],
-        'certificate_number' => ['so_hieu_chung_chi', 'so_chung_chi', 'so_vao_so', 'ma_chung_chi', 'so_hieu', 'certificate_number'],
+        'certificate_number' => ['so_hieu_chung_chi', 'so_chung_chi', 'ma_chung_chi', 'so_hieu', 'certificate_number'],
+        'registration_number' => ['so_vao_so_cap_chung_chi', 'so_vao_so_chung_chi', 'so_vao_so', 'registration_number'],
         'birth_date'         => ['ngay_sinh', 'nam_sinh', 'birth_date'],
         'issue_date'         => ['ngay_cap', 'ngay_cap_chung_chi', 'ngay_nhan', 'ngay_phat', 'issue_date'],
         'council'            => ['hoi_dong_cap', 'don_vi_cap', 'noi_cap', 'council'],
@@ -2735,6 +2736,7 @@ function alpha_edu_build_certificate_results_from_rows($rows) {
             'student_name'       => $student_name,
             'certificate_name'   => isset($column_map['certificate_name']) ? alpha_edu_clean_exam_cell($row[$column_map['certificate_name']] ?? '') : '',
             'certificate_number' => alpha_edu_clean_exam_cell($row[$column_map['certificate_number']] ?? ''),
+            'registration_number' => isset($column_map['registration_number']) ? alpha_edu_clean_exam_cell($row[$column_map['registration_number']] ?? '') : '',
             'birth_date'         => isset($column_map['birth_date']) ? alpha_edu_clean_exam_cell($row[$column_map['birth_date']] ?? '') : '',
             'issue_date'         => isset($column_map['issue_date']) ? alpha_edu_clean_exam_cell($row[$column_map['issue_date']] ?? '') : '',
             'council'            => isset($column_map['council']) ? alpha_edu_clean_exam_cell($row[$column_map['council']] ?? '') : '',
@@ -3030,6 +3032,7 @@ function alpha_edu_handle_certificate_results_save_rows() {
             'student_name'       => alpha_edu_clean_exam_cell($row['student_name'] ?? ''),
             'certificate_name'   => alpha_edu_clean_exam_cell($row['certificate_name'] ?? ''),
             'certificate_number' => alpha_edu_clean_exam_cell($row['certificate_number'] ?? ''),
+            'registration_number' => alpha_edu_clean_exam_cell($row['registration_number'] ?? ''),
             'birth_date'         => alpha_edu_clean_exam_cell($row['birth_date'] ?? ''),
             'issue_date'         => alpha_edu_clean_exam_cell($row['issue_date'] ?? ''),
             'council'            => alpha_edu_clean_exam_cell($row['council'] ?? ''),
@@ -3081,6 +3084,7 @@ function alpha_edu_render_certificate_results_admin_page() {
             $row['student_name'] ?? '',
             $row['certificate_name'] ?? '',
             $row['certificate_number'] ?? '',
+            $row['registration_number'] ?? '',
             $row['birth_date'] ?? '',
             $row['issue_date'] ?? '',
             $row['council'] ?? '',
@@ -3215,7 +3219,7 @@ function alpha_edu_render_certificate_results_admin_page() {
             <input type="hidden" name="action" value="alpha_edu_upload_certificate_results">
 
             <h2 style="margin-top:0;"><?php esc_html_e('Upload file chứng chỉ', 'alpha-edu'); ?></h2>
-            <p><?php esc_html_e('Hỗ trợ file .xlsx hoặc .csv gồm các cột Số hiệu chứng chỉ, Họ và, Tên, Ngày sinh, Loại chứng chỉ, Khóa thi, Ngày cấp chứng chỉ, Hội đồng cấp. Cột Số hiệu chứng chỉ là bắt buộc.', 'alpha-edu'); ?></p>
+            <p><?php esc_html_e('Hỗ trợ file .xlsx hoặc .csv gồm các cột Số hiệu chứng chỉ, Số vào sổ cấp chứng chỉ, Họ và, Tên, Ngày sinh, Loại chứng chỉ, Khóa thi, Ngày cấp chứng chỉ, Hội đồng cấp. Cột Số hiệu chứng chỉ là bắt buộc.', 'alpha-edu'); ?></p>
             <p><input type="file" name="alpha_certificate_results_file" accept=".xlsx,.csv" required></p>
             <?php submit_button(__('Cập nhật thông tin chứng chỉ', 'alpha-edu')); ?>
         </form>
@@ -3267,7 +3271,7 @@ function alpha_edu_render_certificate_results_admin_page() {
                 <input type="hidden" name="action" value="alpha_edu_save_certificate_results_rows">
 
                 <div class="alpha-certificate-panel" style="overflow:auto;">
-                    <table class="widefat striped" style="min-width:1520px;border:0;">
+                    <table class="widefat striped" style="min-width:1740px;border:0;">
                         <thead>
                             <tr>
                                 <th style="width:32px;"><input type="checkbox" id="alpha-certificate-select-all"></th>
@@ -3276,6 +3280,7 @@ function alpha_edu_render_certificate_results_admin_page() {
                                 <th style="width:220px;"><?php esc_html_e('Học viên', 'alpha-edu'); ?></th>
                                 <th style="width:220px;"><?php esc_html_e('Tên chứng chỉ', 'alpha-edu'); ?></th>
                                 <th style="width:180px;"><?php esc_html_e('Số hiệu chứng chỉ', 'alpha-edu'); ?></th>
+                                <th style="width:220px;"><?php esc_html_e('Số vào sổ cấp chứng chỉ', 'alpha-edu'); ?></th>
                                 <th style="width:140px;"><?php esc_html_e('Ngày sinh', 'alpha-edu'); ?></th>
                                 <th style="width:140px;"><?php esc_html_e('Ngày cấp', 'alpha-edu'); ?></th>
                                 <th style="width:260px;"><?php esc_html_e('Hội đồng cấp', 'alpha-edu'); ?></th>
@@ -3291,6 +3296,7 @@ function alpha_edu_render_certificate_results_admin_page() {
                                     <td><input type="text" name="alpha_certificate_rows[<?php echo esc_attr($index); ?>][student_name]" value="<?php echo esc_attr($row['student_name'] ?? ''); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_certificate_rows[<?php echo esc_attr($index); ?>][certificate_name]" value="<?php echo esc_attr($row['certificate_name'] ?? ''); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_certificate_rows[<?php echo esc_attr($index); ?>][certificate_number]" value="<?php echo esc_attr($row['certificate_number'] ?? ''); ?>" style="width:100%;"></td>
+                                    <td><input type="text" name="alpha_certificate_rows[<?php echo esc_attr($index); ?>][registration_number]" value="<?php echo esc_attr($row['registration_number'] ?? ''); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_certificate_rows[<?php echo esc_attr($index); ?>][birth_date]" value="<?php echo esc_attr($row['birth_date'] ?? ''); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_certificate_rows[<?php echo esc_attr($index); ?>][issue_date]" value="<?php echo esc_attr($row['issue_date'] ?? ''); ?>" style="width:100%;"></td>
                                     <td><input type="text" name="alpha_certificate_rows[<?php echo esc_attr($index); ?>][council]" value="<?php echo esc_attr($row['council'] ?? ''); ?>" style="width:100%;"></td>

@@ -57,6 +57,7 @@ if ($has_searched && function_exists('alpha_edu_lookup_certificate_results')) {
                                         <div><dt>Loại chứng chỉ:</dt><dd><?php echo esc_html(($row['certificate_name'] ?? '') ?: '-'); ?></dd></div>
                                         <div><dt>Ngày thi:</dt><dd><?php echo esc_html(($row['course'] ?? '') ?: '-'); ?></dd></div>
                                         <div><dt>Ngày cấp chứng chỉ:</dt><dd><?php echo esc_html(($row['issue_date'] ?? '') ?: '-'); ?></dd></div>
+                                        <div><dt>Số vào sổ cấp chứng chỉ:</dt><dd><?php echo esc_html(($row['registration_number'] ?? '') ?: '-'); ?></dd></div>
                                     </dl>
                                 </td>
                                 <td><?php echo esc_html($row['note'] ?: '-'); ?></td>
