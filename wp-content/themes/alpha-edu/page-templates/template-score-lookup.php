@@ -68,8 +68,8 @@ if ($has_searched && function_exists('alpha_edu_lookup_exam_results')) {
             </label>
 
             <label class="score-field">
-                <span>Số CCCD:</span>
-                <input type="text" name="exam_cccd" value="<?php echo esc_attr($cccd); ?>" inputmode="numeric" placeholder="Nhập số CCCD">
+                <span>Số CCCD/số báo danh:</span>
+                <input type="text" name="exam_cccd" value="<?php echo esc_attr($cccd); ?>" inputmode="numeric" placeholder="Nhập số CCCD/số báo danh">
             </label>
 
             <button class="score-submit" type="submit">Tra cứu</button>
